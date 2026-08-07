@@ -117,7 +117,7 @@ To enable, copy `.env.example` to `.env` and set a provider. Both options are co
 
 ```
 PUBLIC_ANALYTICS_PROVIDER=plausible
-PUBLIC_ANALYTICS_ID=superposition.xyz
+PUBLIC_ANALYTICS_ID=superposition.pages.dev
 ```
 
 The values are validated by the schema in `astro.config.ts`, and a provider set without an id fails the build rather than deploying blind.
