@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="_ds/broadsheet-941ef6e1-bc19-4841-87da-6c0331244c78/styles.css">
+<script src="_ds/broadsheet-941ef6e1-bc19-4841-87da-6c0331244c78/_ds_bundle.js"></script>
+<style>
+body { margin: 0; background: var(--color-bg); text-wrap: pretty; }
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent); }
+@keyframes sp-orbit { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes sp-ripple-a { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+@keyframes sp-ripple-b { 0%,100% { transform: scale(1.18); } 50% { transform: scale(1); } }
+@keyframes sp-pulse { 0%,100% { box-shadow: 0 0 16px 4px rgba(160,225,245,0.7); } 50% { box-shadow: 0 0 30px 10px rgba(160,225,245,0.45); } }
+@keyframes sp-twinkle { 0%,100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+</style>
+</helmet>
+<div style="min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); display: flex; flex-direction: column;">
+  <div style="position: relative; background: oklch(0.21 0.055 235); color: #eef1f3; overflow: hidden;">
+    <sc-if value="{{ animations }}" hint-placeholder-val="{{ true }}">
+      <div aria-hidden="true" style="position: absolute; inset: -25%; background: repeating-radial-gradient(circle at 32% 42%, rgba(102,199,228,0.13) 0 2px, transparent 2px 44px); animation: sp-ripple-a 16s ease-in-out infinite;"></div>
+      <div aria-hidden="true" style="position: absolute; inset: -25%; background: repeating-radial-gradient(circle at 68% 58%, rgba(240,118,178,0.10) 0 2px, transparent 2px 52px); animation: sp-ripple-b 19s ease-in-out infinite;"></div>
+      <div aria-hidden="true" style="position: absolute; right: max(-40px, calc(50vw - 660px)); top: 50%; width: 620px; height: 620px; margin-top: -290px; perspective: 1100px;">
+        <span style="position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #ffffff, #cfeaf2 45%, #6fa8bd 100%); animation: sp-pulse 4s ease-in-out infinite;"></span>
+        <span style="position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(68deg) rotateZ(24deg);"><span style="position: absolute; inset: 0; border: 1px solid rgba(130,210,235,0.38); border-radius: 50%;"></span><span style="position: absolute; inset: 0; transform-style: preserve-3d; animation: sp-orbit 11s linear infinite;"><span style="position: absolute; left: 50%; top: 0; width: 0; height: 0; transform-style: preserve-3d;"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; transform-style: preserve-3d; animation: sp-orbit 11s linear infinite reverse;"><span style="position: absolute; inset: 0; border-radius: 50%; transform: rotateZ(-24deg) rotateX(-68deg); background: radial-gradient(circle at 32% 28%, #e9fbff, #7fd4ec 45%, #0e4c60 100%); box-shadow: 0 0 14px 3px rgba(127,212,236,0.55);"></span></span></span></span><span style="position: absolute; inset: 0; transform-style: preserve-3d; animation: sp-orbit 11s linear infinite; animation-delay: -5.5s;"><span style="position: absolute; left: 50%; top: 0; width: 0; height: 0; transform-style: preserve-3d;"><span style="position: absolute; left: -5.5px; top: -5.5px; width: 11px; height: 11px; transform-style: preserve-3d; animation: sp-orbit 11s linear infinite reverse; animation-delay: -5.5s;"><span style="position: absolute; inset: 0; border-radius: 50%; transform: rotateZ(-24deg) rotateX(-68deg); background: radial-gradient(circle at 32% 28%, #d9f4fc, #6fc0d8 45%, #0e4c60 100%);"></span></span></span></span></span>
+        <span style="position: absolute; inset: 70px; transform-style: preserve-3d; transform: rotateX(62deg) rotateZ(-38deg);"><span style="position: absolute; inset: 0; border: 1px solid rgba(240,140,190,0.32); border-radius: 50%;"></span><span style="position: absolute; inset: 0; transform-style: preserve-3d; animation: sp-orbit 17s linear infinite reverse;"><span style="position: absolute; left: 50%; top: 0; width: 0; height: 0; transform-style: preserve-3d;"><span style="position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; transform-style: preserve-3d; animation: sp-orbit 17s linear infinite;"><span style="position: absolute; inset: 0; border-radius: 50%; transform: rotateZ(38deg) rotateX(-62deg); background: radial-gradient(circle at 32% 28%, #ffe9f4, #f08cbe 45%, #6e1042 100%); box-shadow: 0 0 14px 3px rgba(240,140,190,0.5);"></span></span></span></span></span>
+        <span style="position: absolute; inset: 145px; transform-style: preserve-3d; transform: rotateX(74deg) rotateZ(82deg);"><span style="position: absolute; inset: 0; border: 1px solid rgba(237,187,0,0.28); border-radius: 50%;"></span><span style="position: absolute; inset: 0; transform-style: preserve-3d; animation: sp-orbit 23s linear infinite;"><span style="position: absolute; left: 50%; top: 0; width: 0; height: 0; transform-style: preserve-3d;"><span style="position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; transform-style: preserve-3d; animation: sp-orbit 23s linear infinite reverse;"><span style="position: absolute; inset: 0; border-radius: 50%; transform: rotateZ(-82deg) rotateX(-74deg); background: radial-gradient(circle at 32% 28%, #fff8e0, #edd06a 45%, #6e5606 100%); box-shadow: 0 0 12px 2px rgba(237,208,106,0.5);"></span></span></span></span></span>
+        <span style="position: absolute; inset: -30px; transform: rotateX(72deg) rotateZ(-8deg);"><span style="position: absolute; inset: 0; border: 1px dotted rgba(238,241,243,0.18); border-radius: 50%;"></span></span>
+        <span style="position: absolute; left: 12%; top: 24%; width: 3px; height: 3px; border-radius: 50%; background: #eef1f3; animation: sp-twinkle 5s ease-in-out infinite;"></span>
+        <span style="position: absolute; left: 82%; top: 18%; width: 2px; height: 2px; border-radius: 50%; background: #eef1f3; animation: sp-twinkle 7s ease-in-out infinite; animation-delay: -2s;"></span>
+        <span style="position: absolute; left: 90%; top: 62%; width: 3px; height: 3px; border-radius: 50%; background: #eef1f3; animation: sp-twinkle 6s ease-in-out infinite; animation-delay: -4s;"></span>
+        <span style="position: absolute; left: 22%; top: 80%; width: 2px; height: 2px; border-radius: 50%; background: #eef1f3; animation: sp-twinkle 8s ease-in-out infinite; animation-delay: -1s;"></span>
+        <span style="position: absolute; left: 55%; top: 8%; width: 2px; height: 2px; border-radius: 50%; background: #eef1f3; animation: sp-twinkle 6s ease-in-out infinite; animation-delay: -3s;"></span>
+      </div>
+    </sc-if>
+    <nav class="nav" style="padding: 15px max(clamp(24px, 5vw, 64px), calc((100% - 1200px) / 2)); position: relative; color: #eef1f3;">
+      <span class="nav-brand" style="display: inline-flex; align-items: center; gap: 10px;"><span aria-hidden="true" style="position: relative; width: 22px; height: 14px; display: inline-block;"><span style="position: absolute; left: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--color-accent); mix-blend-mode: screen;"></span><span style="position: absolute; right: 0; top: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--color-accent-2); mix-blend-mode: screen;"></span></span>Superposition</span>
+      <a href="#writings" style="color: #c3cdd4;">Writings</a>
+    </nav>
+    <div style="position: relative; max-width: 1200px; margin: 0 auto; padding: clamp(80px, 12vh, 130px) clamp(24px, 5vw, 64px) clamp(80px, 11vh, 120px);">
+      <h1 style="font-family: var(--font-heading); font-weight: 600; font-size: clamp(48px, 6.5vw, 84px); line-height: 1.06; letter-spacing: -0.025em; margin: 0 0 0 -0.035em; text-shadow: 0.022em 0.016em 0 rgba(0,163,209,0.55), -0.02em -0.014em 0 rgba(214,0,108,0.4);">Between<br>two states<br>of computing.</h1>
+      <p style="font-size: 19px; line-height: 30px; max-width: 42ch; margin: 44px 0 0; color: #c3cdd4;">Superposition is a research and development lab working on quantum computers and cryptography.</p>
+      <div style="display: flex; gap: 12px; margin-top: 32px;">
+        <a href="Superposition Post 001.dc.html" class="btn btn-primary" style="text-decoration: none;">Read № 001</a>
+      </div>
+    </div>
+  </div>
+  <div id="writings" data-reveal="" style="flex: 1; max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: clamp(70px, 10vh, 100px) clamp(24px, 5vw, 64px) clamp(90px, 12vh, 120px);">
+    <span style="display: block; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #55524f; margin-bottom: 32px;">Writings</span>
+    <a href="Superposition Post 001.dc.html" style="text-decoration: none; color: inherit; display: flex; align-items: baseline; gap: 28px; flex-wrap: wrap;">
+      <span style="font-family: var(--font-heading); font-weight: 600; font-size: 17px; color: var(--color-accent-700); white-space: nowrap;">№ 001</span>
+      <h2 style="font-family: var(--font-heading); font-style: italic; font-weight: 400; font-size: clamp(22px, 2.6vw, 32px); line-height: 1.25; letter-spacing: -0.015em; margin: 0; flex: 1; min-width: 260px;">Google proved it holds the core circuits of a quantum attack on Bitcoin&nbsp;<span style="font-style: normal; color: var(--color-accent-700);">→</span></h2>
+      <span style="font-size: 14px; color: #55524f; white-space: nowrap;">August 2026</span>
+    </a>
+  </div>
+  <footer style="max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box; padding: 0 clamp(24px, 5vw, 64px) 48px; font-size: 13px; line-height: 28px; color: #55524f;">© 2026 Superposition — research &amp; development</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;animations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;revealOnScroll&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() {
+    if (!(this.props.revealOnScroll ?? true)) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const els = document.querySelectorAll('[data-reveal]');
+    els.forEach((el) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(22px)';
+      el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
+    });
+    this._io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+          this._io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    els.forEach((el) => this._io.observe(el));
+  }
+  componentWillUnmount() { if (this._io) this._io.disconnect(); }
+  renderVals() {
+    return { animations: this.props.animations ?? true };
+  }
+}
+</script>
+</body>
+</html>

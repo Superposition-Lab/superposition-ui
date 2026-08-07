@@ -1,0 +1,116 @@
+---
+/**
+ * A left-to-right chain of boxes joined by arrows.
+ *
+ * Three box tones carry the meaning:
+ *   private — dashed rule over a halftone screen; the thing never revealed
+ *   plain   — a 1px ink rule; an ordinary public step
+ *   result  — cyan rule on cyan tint; the artifact the chain produces
+ */
+import Figure from './Figure.astro';
+
+export interface ChainLink {
+  label: string;
+  /** Second line, set in magenta small caps. Used to mark what stays secret. */
+  note?: string | undefined;
+  tone?: 'private' | 'plain' | 'result' | undefined;
+  /** Flex growth, so wider labels get proportionally more room. */
+  grow?: number | undefined;
+  /** Minimum width in px before the chain wraps. */
+  minWidth?: number | undefined;
+}
+
+interface Props {
+  links: ChainLink[];
+  n: number;
+  caption: string;
+  top?: string | undefined;
+}
+
+const { links, n, caption, top } = Astro.props;
+---
+
+<Figure {n} {caption} {top} captionGap="14px">
+  <div class="chain">
+    {
+      links.map((link, i) => (
+        <>
+          {i > 0 && (
+            <span class="arrow" aria-hidden="true">
+              &rarr;
+            </span>
+          )}
+          <div
+            class:list={['link', `tone-${link.tone ?? 'plain'}`]}
+            style={`flex:${link.grow ?? 1}; min-width:${link.minWidth ?? 130}px;`}
+          >
+            <span class="label">{link.label}</span>
+            {link.note && <span class="note">{link.note}</span>}
+          </div>
+        </>
+      ))
+    }
+  </div>
+</Figure>
+
+<style>
+  .chain {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    row-gap: 20px;
+  }
+
+  .arrow {
+    align-self: center;
+    padding: 0 10px;
+    font-size: 20px;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .link {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 18px;
+    border: 1px solid var(--color-text);
+  }
+
+  .label {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15.5px;
+    line-height: 21px;
+  }
+
+  .note {
+    font-size: 13px;
+    line-height: 18px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent-2-800);
+  }
+
+  /* The halftone screen reads as "printed but withheld" — present on the page,
+     never resolved into detail. */
+  .tone-private {
+    border-style: dashed;
+    border-color: var(--sp-rule-muted);
+    background: radial-gradient(circle, rgba(32, 30, 29, 0.1) 1px, transparent 1.5px);
+    background-size: 7px 7px;
+  }
+
+  .tone-private .label {
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .tone-result {
+    border-color: var(--color-accent);
+    background: var(--color-accent-100);
+  }
+
+  .tone-result .label {
+    color: var(--color-accent-800);
+  }
+</style>

@@ -1,0 +1,7 @@
+dist
+.astro
+node_modules
+package-lock.json
+
+# Design references, preserved exactly as delivered.
+docs/design-handoff

@@ -1,0 +1,58 @@
+---
+/**
+ * The document shell. Every page renders through this, directly or via
+ * PostLayout, so <head> is defined in exactly one place.
+ */
+import { Font } from 'astro:assets';
+
+import Analytics from '~/components/Analytics.astro';
+import SeoHead, { type SeoProps } from '~/components/seo/SeoHead.astro';
+import { SITE } from '~/config';
+import '~/styles/global.css';
+
+type Props = SeoProps & {
+  /** Class applied to <body>, for page-level layout. */
+  bodyClass?: string | undefined;
+};
+
+const { bodyClass, ...seo } = Astro.props;
+---
+
+<!doctype html>
+<html lang={SITE.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Self-hosted and preloaded: no third-party font request, no layout shift. -->
+    <Font cssVariable="--font-source-serif" preload />
+
+    <SeoHead {...seo} />
+    <Analytics />
+  </head>
+
+  <body class={bodyClass}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+
+    <style>
+      /* Visible only once focused, so keyboard users can bypass the nav. */
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        z-index: 100;
+        padding: 10px 18px;
+        background: var(--color-bg);
+        color: var(--color-accent-700);
+        font-size: 14px;
+      }
+
+      .skip-link:focus {
+        left: 0;
+      }
+    </style>
+  </body>
+</html>

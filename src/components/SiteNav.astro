@@ -1,0 +1,61 @@
+---
+/**
+ * The site nav. Always sits inside the navy band, never sticky.
+ *
+ * Its horizontal padding aligns the brand with the 1200px content column while
+ * the band itself stays full-bleed: `max(gutter, (100% - wrap) / 2)` gives the
+ * gutter on narrow viewports and the column inset on wide ones.
+ */
+import { NAV_LINKS, SITE } from '~/config';
+import LogoMark from './LogoMark.astro';
+
+interface Props {
+  /** On the homepage the brand is not a link — you are already there. */
+  brandIsLink?: boolean;
+}
+
+const { brandIsLink = true } = Astro.props;
+---
+
+<nav class="nav site-nav" aria-label="Primary">
+  {
+    brandIsLink ? (
+      <a class="nav-brand brand" href="/">
+        <LogoMark on="dark" />
+        {SITE.name}
+      </a>
+    ) : (
+      <span class="nav-brand brand">
+        <LogoMark on="dark" />
+        {SITE.name}
+      </span>
+    )
+  }
+
+  {NAV_LINKS.map((link) => <a href={link.href}>{link.label}</a>)}
+</nav>
+
+<style>
+  .site-nav {
+    position: relative; /* above the hero animation layers */
+    padding: 15px max(var(--sp-gutter), calc((100% - var(--sp-wrap)) / 2));
+    color: var(--sp-on-dark);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .site-nav a:not(.brand) {
+    color: var(--sp-on-dark-secondary);
+    transition: color 0.2s ease;
+  }
+
+  .site-nav a:hover {
+    color: var(--color-accent);
+  }
+</style>

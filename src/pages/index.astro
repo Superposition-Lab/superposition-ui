@@ -1,0 +1,52 @@
+---
+import SiteFooter from '~/components/SiteFooter.astro';
+import WritingsList from '~/components/WritingsList.astro';
+import Wrap from '~/components/Wrap.astro';
+import Hero from '~/components/hero/Hero.astro';
+import { SITE } from '~/config';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { formatIssue, getWritings, writingPath } from '~/lib/writings';
+
+const writings = await getWritings();
+const latest = writings[0];
+
+const HEADLINE = ['Between', 'two states', 'of computing.'] as const;
+---
+
+<BaseLayout title={SITE.title} description={SITE.description} ogImage="/og/index.png">
+  <div class="page">
+    <Hero
+      headline={HEADLINE}
+      subhead={SITE.description}
+      cta={latest
+        ? { label: `Read ${formatIssue(latest.data.issue)}`, href: writingPath(latest) }
+        : undefined}
+    />
+
+    <Wrap as="main" id="main" class="main">
+      <WritingsList writings={writings} />
+    </Wrap>
+
+    <Wrap>
+      <SiteFooter />
+    </Wrap>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main {
+    flex: 1;
+  }
+
+  /* The footer sits tight under the writings section, which already carries
+     its own generous bottom padding. */
+  .page :global(.site-footer) {
+    padding-bottom: 48px;
+  }
+</style>

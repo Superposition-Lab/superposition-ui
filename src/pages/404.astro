@@ -1,0 +1,53 @@
+---
+import SiteFooter from '~/components/SiteFooter.astro';
+import SiteNav from '~/components/SiteNav.astro';
+import Wrap from '~/components/Wrap.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not found" description="That page does not exist." noindex>
+  <div class="band">
+    <SiteNav />
+  </div>
+
+  <Wrap as="main" id="main" class="sheet">
+    <p class="code">404</p>
+    <h1>That page does not exist.</h1>
+    <p class="back"><a href="/">Back to the homepage</a></p>
+  </Wrap>
+
+  <Wrap>
+    <SiteFooter />
+  </Wrap>
+</BaseLayout>
+
+<style>
+  .band {
+    background: var(--sp-navy);
+    color: var(--sp-on-dark);
+  }
+
+  .sheet {
+    padding-block: clamp(80px, 14vh, 160px) clamp(80px, 12vh, 140px);
+  }
+
+  .code {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-accent-700);
+    margin: 0;
+  }
+
+  h1 {
+    font-size: clamp(36px, 4.6vw, 56px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin: 20px 0 0 -0.035em;
+  }
+
+  .back {
+    margin-top: 28px;
+    font-size: 17px;
+  }
+</style>

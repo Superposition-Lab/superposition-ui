@@ -1,0 +1,211 @@
+---
+/**
+ * Component gallery — every design token and figure component on one page.
+ *
+ * DEV ONLY. `getStaticPaths` returns nothing in a production build, so this
+ * route does not exist in `dist/`. Run `npm run dev` and open /styleguide.
+ *
+ * Use it when adding a figure or retuning a token: this is the fastest way to
+ * see every variant at once without hunting through an article.
+ */
+import CellGrid from '~/components/figures/CellGrid.astro';
+import ChipRows from '~/components/figures/ChipRows.astro';
+import PipelineLoop from '~/components/figures/PipelineLoop.astro';
+import TrustChain from '~/components/figures/TrustChain.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (() =>
+  import.meta.env.PROD ? [] : [{ params: { page: undefined } }]) satisfies GetStaticPaths;
+
+const RAMPS = [
+  { name: 'neutral', steps: [100, 200, 300, 400, 500, 600, 700, 800, 900], prefix: 'neutral' },
+  { name: 'accent (cyan)', steps: [100, 200, 300, 400, 500, 600, 700, 800, 900], prefix: 'accent' },
+  {
+    name: 'accent-2 (magenta)',
+    steps: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+    prefix: 'accent-2',
+  },
+] as const;
+---
+
+<BaseLayout title="Styleguide" description="Component gallery (development only)" noindex>
+  <main id="main" class="guide">
+    <h1>Styleguide</h1>
+    <p class="lede">
+      Development only &mdash; this route is not emitted in a production build. Everything below
+      reads from <code>src/styles/tokens.css</code>.
+    </p>
+
+    <h2>Color ramps</h2>
+    {
+      RAMPS.map((ramp) => (
+        <section class="ramp">
+          <h3>{ramp.name}</h3>
+          <div class="swatches">
+            {ramp.steps.map((step) => (
+              <div class="swatch">
+                <span style={`background: var(--color-${ramp.prefix}-${step})`} />
+                <code>{step}</code>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    <section class="ramp">
+      <h3>ground &amp; site tokens</h3>
+      <div class="swatches">
+        {
+          [
+            ['bg', 'var(--color-bg)'],
+            ['surface', 'var(--color-surface)'],
+            ['text', 'var(--color-text)'],
+            ['navy', 'var(--sp-navy)'],
+            ['process-yellow', 'var(--color-process-yellow)'],
+          ].map(([label, value]) => (
+            <div class="swatch">
+              <span style={`background: ${value}`} />
+              <code>{label}</code>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <h2>Buttons &amp; tags</h2>
+    <div class="row">
+      <button type="button" class="btn btn-primary">Primary</button>
+      <button type="button" class="btn btn-secondary">Secondary</button>
+      <span class="tag tag-accent">Accent</span>
+      <span class="tag tag-accent-2">Analysis</span>
+      <span class="tag tag-neutral">Neutral</span>
+      <span class="tag tag-outline">Outline</span>
+    </div>
+
+    <h2>Figures</h2>
+
+    <TrustChain
+      n={1}
+      caption="TrustChain — tones: private, plain, result."
+      links={[
+        { label: 'Private circuit', note: 'never revealed', tone: 'private', grow: 1.35 },
+        { label: 'Plain step' },
+        { label: 'Proof', tone: 'result', grow: 0.9 },
+      ]}
+    />
+
+    <PipelineLoop
+      n={2}
+      caption="PipelineLoop — stacked steps with the feedback arc."
+      loop={{ from: 1, to: 2, label: 'the hash loops back as the seed' }}
+      steps={[
+        { title: 'Commit', body: 'Hash the circuit, publish the hash.' },
+        { title: 'Generate tests', body: 'Seed from the hash so the tests cannot be rigged.' },
+        { title: 'Simulate', body: 'Run every case and check the counts.' },
+        { title: 'Compress', body: 'Fold the run into a short proof.' },
+      ]}
+    />
+
+    <ChipRows
+      n={3}
+      caption="ChipRows — states: kept, dropped, highlight."
+      rows={[
+        {
+          label: 'Row A',
+          chips: [{ label: 'kept' }, { label: 'dropped', state: 'dropped' }],
+        },
+        {
+          label: 'Row B',
+          chips: [
+            { label: 'dropped', state: 'dropped' },
+            { label: 'highlight', state: 'highlight' },
+          ],
+        },
+      ]}
+    />
+
+    <CellGrid
+      n={4}
+      caption="CellGrid — states: outline, filled, flagged, broken, skipped."
+      rows={[
+        {
+          label: 'States',
+          note: 'each cell state',
+          cells: [
+            {},
+            { label: '✓', state: 'filled' },
+            { label: 'flagged', state: 'flagged' },
+            { label: '×', state: 'broken' },
+            { label: 'skipped', state: 'skipped' },
+          ],
+        },
+      ]}
+    />
+
+    <div class="tail"></div>
+  </main>
+</BaseLayout>
+
+<style>
+  .guide {
+    max-width: var(--sp-wrap);
+    margin-inline: auto;
+    padding: 64px var(--sp-gutter) 160px;
+  }
+
+  .lede {
+    color: var(--sp-on-paper-tertiary);
+    max-width: 60ch;
+  }
+
+  h2 {
+    margin-top: 72px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-divider);
+  }
+
+  h3 {
+    font-size: 15px;
+    margin: 32px 0 10px;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .swatch {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+  }
+
+  .swatch span {
+    display: block;
+    width: 72px;
+    height: 48px;
+    border: 1px solid var(--color-divider);
+  }
+
+  .swatch code {
+    font-size: 11px;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .tail {
+    height: 40px;
+  }
+</style>

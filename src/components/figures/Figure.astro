@@ -1,0 +1,56 @@
+---
+/**
+ * The shared shell for every diagram: the caption rule, the numbering, and the
+ * measure. Individual figures supply only their own content.
+ */
+
+interface Props {
+  /** Figure number. Rendered as "Fig. 3 — ". */
+  n: number;
+  /** Caption text, without the "Fig. N — " prefix. */
+  caption: string;
+  /*
+   * `| undefined` is explicit on every optional prop because tsconfig runs
+   * `exactOptionalPropertyTypes`: without it, forwarding an absent prop from a
+   * parent component is a type error rather than a no-op.
+   */
+  /** Figure measure. Defaults to the article measure. */
+  width?: string | undefined;
+  /** Space above the figure. */
+  top?: string | undefined;
+  /** Space between the diagram and its caption. */
+  captionGap?: string | undefined;
+  class?: string | undefined;
+}
+
+const {
+  n,
+  caption,
+  width = 'var(--sp-measure)',
+  top = '48px',
+  captionGap = '18px',
+  class: className,
+} = Astro.props;
+---
+
+<figure
+  class:list={['figure', className]}
+  style={`--fig-width:${width}; --fig-top:${top}; --fig-caption-gap:${captionGap};`}
+>
+  <slot />
+  <figcaption>Fig. {n} &mdash; {caption}</figcaption>
+</figure>
+
+<style>
+  .figure {
+    margin: var(--fig-top) 0 0;
+    max-width: var(--fig-width);
+  }
+
+  figcaption {
+    font-size: 13.5px;
+    line-height: 20px;
+    color: var(--sp-on-paper-tertiary);
+    margin-top: var(--fig-caption-gap);
+  }
+</style>

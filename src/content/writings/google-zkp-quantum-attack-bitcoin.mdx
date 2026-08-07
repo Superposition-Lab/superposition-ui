@@ -1,0 +1,241 @@
+---
+issue: 1
+title: Google proved it holds the core circuits of a quantum attack on Bitcoin
+standfirst: An independent verification of Google Quantum AI's zero-knowledge proofs, reproduced from source on a laptop in four minutes.
+publishedAt: 2026-08-01
+tag: Analysis
+---
+
+import Disclaimer from '~/components/Disclaimer.astro';
+import CellGrid from '~/components/figures/CellGrid.astro';
+import ChipRows from '~/components/figures/ChipRows.astro';
+import PipelineLoop from '~/components/figures/PipelineLoop.astro';
+import TrustChain from '~/components/figures/TrustChain.astro';
+
+<TrustChain
+  n={1}
+  top="64px"
+  caption="The trust chain. The circuit never leaves the box; everything downstream of its hash is public."
+  links={[
+    {
+      label: 'Private circuit',
+      note: 'never revealed',
+      tone: 'private',
+      grow: 1.35,
+      minWidth: 170,
+    },
+    { label: 'SHA-256 commitment' },
+    { label: '9,024 tests derived from that same hash', grow: 1.15, minWidth: 140 },
+    { label: 'Simulation inside the zkVM' },
+    { label: 'Proof', tone: 'result', grow: 0.9, minWidth: 100 },
+  ]}
+/>
+
+## In short
+
+Google Quantum AI's [whitepaper](https://quantumai.google/static/site-assets/downloads/cryptocurrency-whitepaper.pdf) on quantum threats to cryptocurrencies ships something unusual in its appendix. It is a pair of [zero-knowledge proofs](https://en.wikipedia.org/wiki/Zero-knowledge_proof) that the authors hold quantum circuits for [secp256k1](https://en.bitcoin.it/wiki/Secp256k1) point addition, the operation at the heart of a quantum attack on Bitcoin and Ethereum keys, and that those circuits stay within stated resource limits. The circuits themselves are never revealed.
+
+We reproduced both proofs. They verify in under a second against the published key, and rebuilding the prover from source gives back the same key and a binary identical to Google's, in about four minutes on a laptop. But a proof that verifies tells you only that a program ran as written, not that the program was asking the right questions. In April 2026, [Trail of Bits](https://blog.trailofbits.com/2026/04/17/we-beat-googles-zero-knowledge-proof-of-quantum-cryptanalysis/) forged a proof that passes the same check we ran, for a circuit reporting zero [Toffoli gates](https://en.wikipedia.org/wiki/Toffoli_gate) where Google's circuits report 2.1 million.
+
+## The claim
+
+Most of the whitepaper is a resource estimate. It argues that a quantum computer could break 256-bit [elliptic curve cryptography](https://en.wikipedia.org/wiki/Elliptic-curve_cryptography) with fewer than a million physical qubits, which puts millions of exposed Bitcoin and Ethereum keys on a clock. An estimate like that invites an obvious reply: prove it. Publishing the attack circuits would hand an attacker the one thing they want, and asking the world to trust the numbers convinces no one. So the authors did something in between. They generated a cryptographic proof that they hold circuits meeting specific limits, and the proof reveals nothing beyond those limits.
+
+The reason to bother is warning time. As quantum hardware gets close to breaking cryptography, the whitepaper argues, public benchmarks become worse and worse as a guide, because the most advanced results are the least likely to be published. The authors even suggest that the first machine capable of running the attack might reveal itself through thefts on the blockchain before anyone announces it. That makes a checkable claim about quantum capability a prototype for how such claims might be made, or demanded, in the years ahead. Which is a good reason to check that the prototype does what it says.
+
+## What, exactly, was proven
+
+[Shor's algorithm](https://en.wikipedia.org/wiki/Shor%27s_algorithm) recovers a private key from a public key by solving a [discrete logarithm](https://en.wikipedia.org/wiki/Discrete_logarithm), and almost all of the quantum cost of that algorithm is spent adding points on the curve, again and again, in superposition. A circuit that adds points using as few qubits and gates as possible is where the attack spends most of its effort, which is what makes a limit on its cost worth proving.
+
+There are two proofs, for two versions of the circuit. One is tuned to use fewer qubits, the other to use fewer of the expensive gates.
+
+| Circuit                | Logical qubits | Toffoli gates (avg.) |
+| ---------------------- | -------------- | -------------------- |
+| Tuned for fewer qubits | ≤ 1,175        | ≤ 2,700,000          |
+| Tuned for fewer gates  | ≤ 1,425        | ≤ 2,100,000          |
+
+Toffoli gates dominate that cost. On a computer that [corrects its own errors](https://en.wikipedia.org/wiki/Quantum_error_correction), ordinary gates are cheap, but each Toffoli consumes a [magic state](https://en.wikipedia.org/wiki/Magic_state_distillation), and producing magic states is slow and expensive. The Toffoli count is how the field estimates whether an attack is a thousand physical qubits away or a million.
+
+Each proof also fixes which circuit it is talking about, by committing to the [SHA-256](https://en.wikipedia.org/wiki/SHA-2) hash of the circuit's exact list of instructions. The circuit stays private, which is the zero-knowledge part, but a different circuit would have a different hash, so the claim cannot be swapped out later.
+
+## How the proof works
+
+The whole computation runs inside the [SP1 zkVM](https://github.com/succinctlabs/sp1), a virtual machine that produces a cryptographic proof that a given program ran correctly on some private input. Here the private input is the circuit, and the proof attests that each of these steps happened as written.
+
+<PipelineLoop
+  n={2}
+  caption="The pipeline, with the anti-cheating loop: the circuit's own hash seeds the tests (the Fiat–Shamir heuristic). The same random stream drives the circuit's internal measurements, so those cannot be arranged in advance either."
+  loop={{
+    from: 1,
+    to: 2,
+    label: 'the hash loops back as the seed — change the circuit and every test changes',
+  }}
+  steps={[
+    {
+      title: 'Commit',
+      body: 'Hash the circuit, publish the hash. Check its shape and the qubit and operation counts against the stated limits.',
+    },
+    {
+      title: 'Generate tests nobody can rig',
+      body: "Seed SHAKE-256 with the circuit's own bytes; draw 9,024 random point pairs, each expected sum computed with separate, ordinary secp256k1 code.",
+    },
+    {
+      title: 'Simulate and check',
+      body: 'Run all 9,024 cases, 64 at a time. Correct output, no stray phase, every helper qubit back to zero; average Toffoli count under the limit.',
+    },
+    {
+      title: 'Compress',
+      body: 'SP1 folds the entire run into a ~260-byte Groth16 proof, verifiable in under a second.',
+    },
+  ]}
+/>
+
+Step 3 raises a question. How can simulating a circuit on ordinary hardware certify that it works on superposed inputs it was never tested on? It works because these circuits only ever send basis states to basis states, apart from a sign the simulator tracks. For that kind of circuit, being correct on every plain input, with the right sign and with all helper qubits returned cleanly to zero, forces it to be correct on any superposition of those inputs. The sign check and the clean-helper check are what turn [ordinary reversible logic](https://en.wikipedia.org/wiki/Reversible_computing) into a quantum subroutine. Get the boring parts right and the quantum behavior follows.
+
+## The verification: removing trust one layer at a time
+
+The repository ships two proofs, a verification key (`vkey.bin`), the compiled program the proofs are about (`zkp_ecc-program`), and the Rust source it was built from. The verifier accepts these in three combinations, and each one asks you to trust a little less.
+
+<ChipRows
+  n={3}
+  caption="What you still trust, by mode. By mode 3 nothing Google shipped is left in the trust base — only source code and the pinned toolchain."
+  rows={[
+    {
+      label: 'Mode 1',
+      chips: [
+        { label: "Google's key" },
+        { label: "Google's binary" },
+        { label: 'source + toolchain' },
+      ],
+    },
+    {
+      label: 'Mode 2',
+      chips: [
+        { label: "Google's key", state: 'dropped' },
+        { label: "Google's binary" },
+        { label: 'source + toolchain' },
+      ],
+    },
+    {
+      label: 'Mode 3',
+      chips: [
+        { label: "Google's key", state: 'dropped' },
+        { label: "Google's binary", state: 'dropped' },
+        { label: 'source + pinned toolchain', state: 'highlight' },
+      ],
+    },
+  ]}
+/>
+
+| Mode | You provide                     | You still trust                  | Result                        |
+| ---- | ------------------------------- | -------------------------------- | ----------------------------- |
+| 1    | proof and shipped `vkey.bin`    | Google's key and binary          | both proofs pass, under 1 s   |
+| 2    | proof and shipped binary        | Google's binary                  | both proofs pass              |
+| 3    | proof only, rebuild from source | source code and pinned toolchain | both proofs pass, about 4 min |
+
+Mode 1 confirms the pieces are consistent with each other, and the values the proofs carry match the published claims. The key came from Google too, so on its own that proves little. Mode 2 drops the key, because in SP1 the verification key is a short fingerprint of one specific compiled binary and can be recomputed from it. The recomputed key is identical.
+
+Mode 3 drops the binary as well. With no key and no binary supplied, the verifier rebuilds the program from source inside a pinned Docker image (`ghcr.io/succinctlabs/sp1:v6.0.2`, a tag fixed by the repository's `Cargo.lock`, so a later toolchain release cannot quietly change the build), computes the key from that fresh build, and checks the proofs against it.
+
+```bash
+cargo run --release -p verifier -- --proof proofs/low_toffoli/proof_9024.bin
+```
+
+```text
+Verifying Key (Hex): 0x00ca4af6cb15dbd83ec3eaab3a0664023828d90a98e650d2d340712f5f3eb0d4
+Successfully verified Groth16 SNARK proof.
+Circuit hash commitment: 0x24f5758f2216aa87aa2806af32a0db788767b873cf6869510cca3d893b3f8a69
+```
+
+The key matches the published one, and both proofs verify against it. The full run took 4 minutes and 2 seconds on an Apple Silicon laptop, of which the program compile was 1 minute and 47 seconds. On a Mac the SP1 image needs an explicit `--platform linux/amd64`, so the build runs under emulation.
+
+Then the rebuild gave us a result we did not expect. Our freshly compiled binary and the one Google shipped are the same file:
+
+```text
+$ shasum -a 256 proofs/zkp_ecc-program target/elf-compilation/docker/.../zkp_ecc-program
+eafefefd0749fb3a36b00d1bec9a84e06562131dc138c283b2bd88a547069e0d  proofs/zkp_ecc-program
+eafefefd0749fb3a36b00d1bec9a84e06562131dc138c283b2bd88a547069e0d  .../zkp_ecc-program
+```
+
+The same bytes, months later, on different hardware, under emulation. [Reproducible builds](https://reproducible-builds.org/) usually break on embedded timestamps, absolute paths baked into the binary, or a toolchain that drifted. This one held.
+
+What you still trust after mode 3 is short enough to write out in full: the roughly 200 lines of program and library that decide what statement is being proven, the roughly 120 lines of the verifier, the pinned toolchain image, and the soundness of SP1 and of Groth16. That first item is where things went wrong.
+
+## What a verified proof does not tell you
+
+A zero-knowledge proof certifies that a specific program ran to completion on some hidden input. It says nothing about whether that program was checking the right things. If the program has a hole in its logic, the proof faithfully certifies a run through the hole. All the cryptographic strength in the world sits behind a check written in ordinary Rust.
+
+Three more limits are built into the statement itself. The correctness check is statistical, since the circuit is tested on 9,024 inputs rather than all of the roughly 2^512 possible ones, so a circuit that failed only on some very rare input could still get through. The Toffoli limit is an average across those same random inputs, which describes typical cost rather than a worst case. And the proof is about circuits, not computers: it says nothing about physical qubits, the overhead of error correction, or whether a machine exists that could run any of this.
+
+## The proof system is its own attack surface
+
+In April 2026, Trail of Bits [forged a proof](https://blog.trailofbits.com/2026/04/17/we-beat-googles-zero-knowledge-proof-of-quantum-cryptanalysis/) that passes Google's unpatched verifier, for a circuit that does not obey the rules of quantum computing. It claims 8.3 million operations against Google's 17 million, 1,164 qubits against 1,175, and zero Toffoli gates against 2.1 million. As they put it, this came "not due to some quantum breakthrough" but from exploiting bugs in the prover. There were two, and both live in that program logic.
+
+The first is about how the circuit is read. The program interprets the circuit bytes without checking that each instruction code is one of the valid ones. Feed it a code outside the allowed range, and the counting of gates and the execution of gates, which the code walks in two separate passes, fall out of step. The pass that runs the operation still runs it, while the pass that counts Toffoli gates skips it. The circuit does the work and the meter reads zero.
+
+<CellGrid
+  n={4}
+  caption="The two-pass desync. One malformed instruction code knocks the counting pass off its rails while the execution pass keeps running."
+  rows={[
+    {
+      label: 'Instructions',
+      cells: [{}, {}, { label: 'malformed', state: 'flagged' }, {}, {}, {}],
+    },
+    {
+      label: 'Execution pass',
+      note: 'the gate fires',
+      cells: [
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+      ],
+    },
+    {
+      label: 'Counting pass',
+      note: 'the meter reads 0',
+      noteFlagged: true,
+      cells: [
+        { label: '✓', state: 'filled' },
+        { label: '✓', state: 'filled' },
+        { label: '×', state: 'broken' },
+        { label: 'skipped', state: 'skipped' },
+        { label: 'skipped', state: 'skipped' },
+        { label: 'skipped', state: 'skipped' },
+      ],
+    },
+  ]}
+/>
+
+The second is a missing check on a single gate. A Toffoli takes three qubits, and the code never checks that they are three different qubits. Point all three at the same qubit and the gate collapses into an ordinary, irreversible logic gate, the kind a real quantum computer cannot perform for free. With that you can build a circuit that produces the right answers for point addition on every test while quietly breaking the rule that quantum circuits must be reversible.
+
+This is not a break of the zero-knowledge math, and it is not evidence that Google faked its own numbers. Their proofs describe real circuits. What Trail of Bits showed is that the proof guaranteed less than it appeared to. It certified that a particular program accepted the circuit, and that program could be talked into accepting circuits it should have rejected. The fix was ordinary software hardening, and Google patched the prover.
+
+A zero-knowledge proof can move trust off a company's word and onto open code that anyone can rebuild, and we just watched that work. It also concentrates all the remaining risk into that code. The key and binary in the public repository, the ones we verified above, are the version from before the fix. They still accept the forged proof.
+
+## What this could become
+
+The tool outlasts this one artifact. It backs a claim of the form "I hold something with these measurable properties" while revealing nothing dangerous, and anyone can check it in seconds. In quantum computing the most important progress may also be the least visible, so a claim that can be checked without being revealed fills a real gap.
+
+Quantum labs could back up benchmark results without exposing their intellectual property. Graded ladders of these attestations could track progress toward breaking cryptography in the open, instead of leaving everyone to guess. Canaries on a blockchain could give protocols and custodians an automatic signal for when the move to [post-quantum cryptography](https://en.wikipedia.org/wiki/Post-quantum_cryptography) can no longer wait. The Trail of Bits result sharpens that case rather than denting it. The cryptography did its job, and the hard part is making the claim inside the proof mean what it appears to mean. Today the whole idea exists as one artifact: two proofs, one circuit, one curve, published once, and already improved once by an outside team finding what it missed. That is what we are working on.
+
+## Reproduce it yourself
+
+Everything here is checkable from the [public repository](https://github.com/MCarlomagno/ecc_vs_pqc_zkp), mirrored from Google's [original release](https://quantumai.google/static/site-assets/downloads/cryptocurrency-whitepaper.pdf). With Rust and Docker installed, the strongest check is a single command:
+
+```bash
+# No key, no binary. Rebuild the prover from source and verify against it.
+cargo run --release -p verifier -- --proof proofs/low_toffoli/proof_9024.bin
+```
+
+Budget about fifteen minutes the first time, most of it a one-time download of the roughly 6 GB Docker image. The check itself takes seconds. The repository README covers the lighter modes and a walkthrough on a smaller circuit.
+
+Two follow-ups are in progress. First, generating a proof of our own from the toolkit's 64-qubit adder example, since verifying someone else's proof is one thing and producing one end to end is another. Second, attesting a circuit for a different curve, to see how far the approach carries.
+
+<Disclaimer>
+  We are not affiliated with Google or the whitepaper's authors. This is an independent reproduction
+  of published work. We found no earlier public report of a third-party reproduction, and would be
+  glad to be pointed to one.
+</Disclaimer>

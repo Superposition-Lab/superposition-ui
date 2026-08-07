@@ -1,0 +1,188 @@
+---
+/**
+ * The 3D atom in the hero: a pulsing core, three tilted orbit planes with
+ * billboarded electrons, a dotted outer ring, and background stars.
+ *
+ * Pure CSS — no canvas, no WebGL, no JavaScript. Geometry comes from
+ * `orbit-system.ts`; this file only turns it into markup.
+ *
+ * Decorative, so the whole thing is aria-hidden. Motion stops under
+ * prefers-reduced-motion (see base.css) and the composition holds as a still.
+ */
+import {
+  ORBIT_PLANES,
+  ORBIT_SIZE,
+  TWINKLES,
+  billboardTransform,
+  sphereGradient,
+} from './orbit-system';
+---
+
+<div class="orbit-system" aria-hidden="true" style={`--orbit-size:${ORBIT_SIZE}px`}>
+  <span class="core"></span>
+
+  {
+    ORBIT_PLANES.map((plane) => (
+      <span
+        class="plane"
+        style={`inset:${plane.inset}px; transform: rotateX(${plane.rotateX}deg) rotateZ(${plane.rotateZ}deg);`}
+      >
+        <span class="ring" style={`border-color:${plane.ring}`} />
+
+        {plane.electrons.map((electron) => (
+          <span
+            class="spin"
+            style={`animation-duration:${plane.duration}s;
+                    animation-direction:${plane.reverse ? 'reverse' : 'normal'};
+                    animation-delay:${electron.delay ?? 0}s;`}
+          >
+            <span class="anchor">
+              <span
+                class="counter-spin"
+                style={`width:${electron.size}px; height:${electron.size}px;
+                        left:${-electron.size / 2}px; top:${-electron.size / 2}px;
+                        animation-duration:${plane.duration}s;
+                        animation-direction:${plane.reverse ? 'normal' : 'reverse'};
+                        animation-delay:${electron.delay ?? 0}s;`}
+              >
+                <span
+                  class="electron"
+                  style={`transform:${billboardTransform(plane)};
+                          background:${sphereGradient(electron.colors)};
+                          ${electron.glow ? `box-shadow:${electron.glow};` : ''}`}
+                />
+              </span>
+            </span>
+          </span>
+        ))}
+      </span>
+    ))
+  }
+
+  <span class="outer-ring"></span>
+
+  {
+    TWINKLES.map((star) => (
+      <span
+        class="twinkle"
+        style={`left:${star.left}%; top:${star.top}%;
+                width:${star.size}px; height:${star.size}px;
+                animation-duration:${star.duration}s; animation-delay:${star.delay}s;`}
+      />
+    ))
+  }
+</div>
+
+<style>
+  .orbit-system {
+    position: absolute;
+    /* Pinned to the right of the content column; allowed to bleed off-canvas
+       on narrow viewports rather than shrinking into illegibility. */
+    right: max(-40px, calc(50vw - 660px));
+    top: 50%;
+    width: var(--orbit-size);
+    height: var(--orbit-size);
+    margin-top: calc(var(--orbit-size) / -2 + 20px);
+    perspective: 1100px;
+    pointer-events: none;
+  }
+
+  .core {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #ffffff, #cfeaf2 45%, #6fa8bd 100%);
+    animation: sp-pulse 4s ease-in-out infinite;
+  }
+
+  .plane,
+  .spin,
+  .anchor,
+  .counter-spin {
+    position: absolute;
+    transform-style: preserve-3d;
+  }
+
+  .spin,
+  .ring {
+    inset: 0;
+  }
+
+  .ring {
+    position: absolute;
+    border: 1px solid;
+    border-radius: 50%;
+  }
+
+  .spin,
+  .counter-spin {
+    animation-name: sp-orbit;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  /* A zero-size point on the ring. The electron hangs off it, so the electron
+     size never shifts the orbit radius. */
+  .anchor {
+    left: 50%;
+    top: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .electron {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  .outer-ring {
+    position: absolute;
+    inset: -30px;
+    border: 1px dotted rgba(238, 241, 243, 0.18);
+    border-radius: 50%;
+    transform: rotateX(72deg) rotateZ(-8deg);
+  }
+
+  .twinkle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--sp-on-dark);
+    animation-name: sp-twinkle;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes sp-orbit {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes sp-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 16px 4px rgba(160, 225, 245, 0.7);
+    }
+    50% {
+      box-shadow: 0 0 30px 10px rgba(160, 225, 245, 0.45);
+    }
+  }
+
+  @keyframes sp-twinkle {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+</style>

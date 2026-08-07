@@ -1,0 +1,69 @@
+---
+/**
+ * The Superposition mark: two overlapping process-ink dots.
+ *
+ * The overlap is the whole idea — two states occupying the same place. The
+ * blend mode has to flip with the ground it sits on, because `screen` lightens
+ * (right for ink on navy) and `multiply` darkens (right for ink on paper).
+ */
+
+interface Props {
+  /** Which ground the mark sits on. Decides the blend mode. */
+  on?: 'dark' | 'paper';
+  /** Diameter of each dot, in px. The mark scales from this. */
+  size?: number;
+}
+
+const { on = 'dark', size = 14 } = Astro.props;
+
+// The dots overlap by ~6/14 of their diameter, so the mark is narrower than
+// two dots side by side. Kept proportional so `size` scales the whole thing.
+const overlap = size * (6 / 14);
+const width = size * 2 - overlap;
+---
+
+<span
+  class="logo-mark"
+  aria-hidden="true"
+  data-on={on}
+  style={`--mark-size:${size}px; --mark-width:${width}px;`}
+>
+  <span class="dot dot-cyan"></span>
+  <span class="dot dot-magenta"></span>
+</span>
+
+<style>
+  .logo-mark {
+    position: relative;
+    display: inline-block;
+    width: var(--mark-width);
+    height: var(--mark-size);
+    flex: none;
+  }
+
+  .dot {
+    position: absolute;
+    top: 0;
+    width: var(--mark-size);
+    height: var(--mark-size);
+    border-radius: 50%;
+  }
+
+  .dot-cyan {
+    left: 0;
+    background: var(--color-accent);
+  }
+
+  .dot-magenta {
+    right: 0;
+    background: var(--color-accent-2);
+  }
+
+  .logo-mark[data-on='dark'] .dot {
+    mix-blend-mode: screen;
+  }
+
+  .logo-mark[data-on='paper'] .dot {
+    mix-blend-mode: multiply;
+  }
+</style>

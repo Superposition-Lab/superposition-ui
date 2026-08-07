@@ -1,0 +1,148 @@
+---
+/**
+ * The journal index: one row per post, the whole row a link.
+ *
+ * Reveals on scroll. The reveal is progressive enhancement — the section is
+ * fully visible with JavaScript disabled, and the script only ever hides
+ * something it is about to bring back.
+ */
+import { formatIssue, formatMonthYear, writingPath, type Writing } from '~/lib/writings';
+
+interface Props {
+  writings: Writing[];
+}
+
+const { writings } = Astro.props;
+---
+
+<section id="writings" class="writings" data-reveal>
+  <h2 class="kicker">Writings</h2>
+
+  <ul class="rows">
+    {
+      writings.map((entry) => (
+        <li>
+          <a class="row" href={writingPath(entry)}>
+            <span class="issue">{formatIssue(entry.data.issue)}</span>
+            <span class="title">
+              {entry.data.title}
+              &nbsp;
+              <span class="arrow" aria-hidden="true">
+                &rarr;
+              </span>
+            </span>
+            <time class="date" datetime={entry.data.publishedAt.toISOString()}>
+              {formatMonthYear(entry.data.publishedAt)}
+            </time>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<script>
+  // Reveal on scroll, once, and never for readers who asked for less motion.
+  const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
+
+  if (!prefersReducedMotion && targets.length > 0) {
+    for (const el of targets) el.dataset['revealPending'] = '';
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          delete (entry.target as HTMLElement).dataset['revealPending'];
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.15 },
+    );
+
+    for (const el of targets) observer.observe(el);
+  }
+</script>
+
+<style>
+  .writings {
+    padding-block: clamp(70px, 10vh, 100px) clamp(90px, 12vh, 120px);
+  }
+
+  /* The reveal. Applied by the script above, so no-JS readers see the section
+     in its final state and never get stuck at opacity 0. */
+  [data-reveal-pending] {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  [data-reveal] {
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease;
+  }
+
+  .kicker {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 13px;
+    line-height: inherit;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sp-on-paper-tertiary);
+    margin: 0 0 32px;
+  }
+
+  .rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 28px;
+  }
+
+  .row {
+    display: flex;
+    align-items: baseline;
+    gap: 28px;
+    flex-wrap: wrap;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .issue {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-accent-700);
+    white-space: nowrap;
+  }
+
+  .title {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(22px, 2.6vw, 32px);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    flex: 1;
+    min-width: 260px;
+    transition: color 0.2s ease;
+  }
+
+  .arrow {
+    font-style: normal;
+    color: var(--color-accent-700);
+  }
+
+  .date {
+    font-size: 14px;
+    color: var(--sp-on-paper-tertiary);
+    white-space: nowrap;
+  }
+
+  .row:hover .title,
+  .row:hover .arrow {
+    color: var(--color-accent);
+  }
+</style>

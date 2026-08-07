@@ -1,0 +1,40 @@
+---
+/**
+ * Opt-in, cookieless analytics.
+ *
+ * Renders nothing unless PUBLIC_ANALYTICS_PROVIDER is set (see .env.example).
+ * Both supported providers collect no personal data and set no cookies, so no
+ * consent banner is needed — which is the reason neither Google Analytics nor
+ * anything cookie-based is an option here.
+ */
+import { PUBLIC_ANALYTICS_ID, PUBLIC_ANALYTICS_PROVIDER } from 'astro:env/client';
+
+const provider = PUBLIC_ANALYTICS_PROVIDER;
+const id = PUBLIC_ANALYTICS_ID;
+
+// A provider without its id would silently no-op at runtime; fail the build
+// instead, so a misconfigured deploy never ships blind.
+if (provider !== 'none' && !id) {
+  throw new Error(
+    `PUBLIC_ANALYTICS_PROVIDER is "${provider}" but PUBLIC_ANALYTICS_ID is not set. ` +
+      'See .env.example for what each provider expects.',
+  );
+}
+---
+
+{
+  provider === 'plausible' && (
+    <script is:inline defer data-domain={id} src="https://plausible.io/js/script.js" />
+  )
+}
+
+{
+  provider === 'cloudflare' && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token: id })}
+    />
+  )
+}

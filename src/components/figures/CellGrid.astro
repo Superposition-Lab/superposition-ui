@@ -1,0 +1,137 @@
+---
+/**
+ * Rows of equal-width cells with a label on the left and an annotation on the
+ * right — a tape diagram.
+ *
+ * Built for the two-pass desync: reading down a column compares what each pass
+ * did with the same instruction, and the annotations say what that produced.
+ */
+import Figure from './Figure.astro';
+
+export interface Cell {
+  /** Cell contents. Empty for a bare outline. */
+  label?: string | undefined;
+  /**
+   * outline — 1px ink rule, nothing filled in
+   * filled  — neutral fill; the pass acted on it
+   * flagged — solid magenta; the malformed instruction itself
+   * broken  — dashed magenta; where that instruction derailed the pass
+   * skipped — dashed grey; the pass fell out of step and did nothing
+   */
+  state?: 'outline' | 'filled' | 'flagged' | 'broken' | 'skipped' | undefined;
+}
+
+export interface CellRow {
+  label: string;
+  cells: Cell[];
+  /** Italic note to the right of the row. */
+  note?: string | undefined;
+  /** Set the note in magenta, for the row that carries the consequence. */
+  noteFlagged?: boolean | undefined;
+}
+
+interface Props {
+  rows: CellRow[];
+  n: number;
+  caption: string;
+  top?: string | undefined;
+}
+
+const { rows, n, caption, top } = Astro.props;
+---
+
+<Figure {n} {caption} {top}>
+  <div class="grid">
+    {
+      rows.map((row) => (
+        <>
+          <span class="row-label">{row.label}</span>
+          <div class="cells">
+            {row.cells.map((cell) => (
+              <span class:list={['cell', `is-${cell.state ?? 'outline'}`]}>{cell.label}</span>
+            ))}
+          </div>
+          <span class:list={['note', { flagged: row.noteFlagged }]}>{row.note}</span>
+        </>
+      ))
+    }
+  </div>
+</Figure>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: 130px 1fr 130px;
+    gap: 12px 18px;
+    align-items: center;
+  }
+
+  .row-label {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .cells {
+    display: flex;
+    gap: 6px;
+  }
+
+  .cell {
+    flex: 1;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    white-space: nowrap;
+    padding: 0 4px;
+  }
+
+  .is-outline {
+    border: 1px solid var(--color-text);
+  }
+
+  .is-filled {
+    background: var(--color-neutral-200);
+  }
+
+  .is-flagged {
+    border: 1px solid var(--color-accent-2);
+    background: var(--color-accent-2-100);
+    color: var(--color-accent-2-800);
+    font-size: 12px;
+  }
+
+  .is-broken {
+    border: 1px dashed var(--color-accent-2);
+    color: var(--color-accent-2-800);
+  }
+
+  .is-skipped {
+    border: 1px dashed var(--sp-rule-muted);
+    color: var(--sp-on-paper-muted);
+  }
+
+  .note {
+    font-size: 13.5px;
+    font-style: italic;
+  }
+
+  .note.flagged {
+    color: var(--color-accent-2-800);
+  }
+
+  /* Narrow: stack the label above its row and drop the annotation column. */
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .note:not(:empty) {
+      margin-bottom: 10px;
+    }
+  }
+</style>

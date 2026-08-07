@@ -1,0 +1,22 @@
+/*
+ * The single stylesheet the site loads. Imported once by BaseLayout.
+ *
+ * Order matters — CSS applies these in sequence:
+ *
+ *   1. tokens.css      plain custom properties. Framework-agnostic on purpose:
+ *                      the design system survives a change of build tool.
+ *   2. tailwindcss     preflight + the utility engine.
+ *   3. theme.css       teaches Tailwind our tokens (`@theme inline`, so nothing
+ *                      is re-declared and tokens.css stays authoritative).
+ *   4. base.css        element defaults. Loaded after preflight so it wins.
+ *   5. components.css  the Broadsheet classes this site uses.
+ *
+ * Nothing else in the project should import a stylesheet globally. Component
+ * styling belongs in the scoped `<style>` block of that component.
+ */
+
+@import './tokens.css';
+@import 'tailwindcss';
+@import './theme.css';
+@import './base.css';
+@import './components.css';

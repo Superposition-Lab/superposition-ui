@@ -1,0 +1,22 @@
+---
+/**
+ * The italic note that closes an article — affiliation, scope, corrections.
+ * Set apart from the body by voice rather than by a rule.
+ */
+---
+
+<p class="disclaimer"><slot /></p>
+
+<style>
+  .disclaimer {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 15.5px;
+    line-height: 26px;
+    color: var(--sp-on-paper-tertiary);
+    margin: 64px 0 0;
+    /* Overrides the justified body setting — a note reads as an aside. */
+    text-align: left;
+    max-width: var(--sp-measure);
+  }
+</style>

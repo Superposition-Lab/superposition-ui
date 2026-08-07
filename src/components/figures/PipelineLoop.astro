@@ -1,0 +1,143 @@
+---
+/**
+ * Stacked numbered steps joined by vertical connectors, with an optional
+ * magenta arc looping from one step back to another.
+ *
+ * The arc is drawn with a half-border and a border-radius rather than SVG, so
+ * it inherits the token colors and needs no viewBox maintenance. Its geometry
+ * is derived from which steps it spans, so editing the copy in a step cannot
+ * silently leave the arrow pointing at the wrong box.
+ */
+import Figure from './Figure.astro';
+
+export interface PipelineStep {
+  /** Rendered as "1 · Commit". */
+  title: string;
+  body: string;
+}
+
+interface Props {
+  steps: PipelineStep[];
+  n: number;
+  caption: string;
+  /** The feedback arc, as 1-based step indices, plus its side label. */
+  loop?: { from: number; to: number; label: string } | undefined;
+  top?: string | undefined;
+}
+
+const { steps, n, caption, loop, top } = Astro.props;
+---
+
+<Figure {n} {caption} {top} width="760px">
+  <div class="pipeline" class:list={[{ 'has-loop': loop }]}>
+    {
+      steps.map((step, i) => (
+        <>
+          {i > 0 && <span class="connector" aria-hidden="true" />}
+          <div class="step" data-step={i + 1}>
+            <span class="title">
+              {i + 1} &middot; {step.title}
+            </span>
+            <p>{step.body}</p>
+          </div>
+        </>
+      ))
+    }
+
+    {
+      loop && (
+        <>
+          <span class="arc" aria-hidden="true" />
+          <span class="arrowhead" aria-hidden="true" />
+          <span class="loop-label">{loop.label}</span>
+        </>
+      )
+    }
+  </div>
+</Figure>
+
+<style>
+  .pipeline {
+    position: relative;
+  }
+
+  .pipeline.has-loop {
+    /* Room to the right for the arc and its label. */
+    padding-right: 190px;
+  }
+
+  .step {
+    border: 1px solid var(--color-text);
+    padding: 18px 22px;
+  }
+
+  .title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .step p {
+    font-size: 14.5px;
+    line-height: 22px;
+    color: var(--sp-on-paper-secondary);
+    margin: 6px 0 0;
+  }
+
+  .connector {
+    display: block;
+    width: 1px;
+    height: 26px;
+    background: var(--color-text);
+    margin-left: 40px;
+  }
+
+  /* The arc: a rectangle with only its right border drawn, rounded hard enough
+     that the border reads as a semicircle. */
+  .arc {
+    position: absolute;
+    right: 60px;
+    top: 34px;
+    height: 168px;
+    width: 110px;
+    border: 1.5px solid var(--color-accent-2);
+    border-left: none;
+    border-radius: 0 60px 60px 0;
+  }
+
+  .arrowhead {
+    position: absolute;
+    right: 163px;
+    top: 196px;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 9px solid var(--color-accent-2);
+  }
+
+  .loop-label {
+    position: absolute;
+    right: 0;
+    top: 88px;
+    width: 150px;
+    font-size: 13px;
+    line-height: 19px;
+    font-style: italic;
+    color: var(--color-accent-2-800);
+  }
+
+  /* Below the arc's own width the loop would overlap the steps. Drop it and
+     let the connectors carry the sequence. */
+  @media (max-width: 720px) {
+    .pipeline.has-loop {
+      padding-right: 0;
+    }
+
+    .arc,
+    .arrowhead,
+    .loop-label {
+      display: none;
+    }
+  }
+</style>

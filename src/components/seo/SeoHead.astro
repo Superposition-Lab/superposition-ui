@@ -1,0 +1,95 @@
+---
+/**
+ * Everything that goes in <head> for discoverability: canonical URL, Open
+ * Graph, Twitter cards, and JSON-LD.
+ *
+ * Kept in one component so adding a page never means remembering a checklist —
+ * BaseLayout renders this for every route.
+ */
+import { SITE, OG_IMAGE_SIZE } from '~/config';
+
+export interface SeoProps {
+  title: string;
+  description: string;
+  /** Absolute URL of the social preview image. */
+  ogImage?: URL | string | undefined;
+  /** `article` adds publication metadata to the JSON-LD and OG tags. */
+  type?: 'website' | 'article';
+  /** Article publication date. Required when `type` is `article`. */
+  publishedAt?: Date | undefined;
+  /** Discourage indexing, e.g. for drafts. */
+  noindex?: boolean | undefined;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  type = 'website',
+  publishedAt,
+  noindex = false,
+} = Astro.props as SeoProps;
+
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
+const image = ogImage ? new URL(ogImage, Astro.site ?? SITE.url) : undefined;
+
+// The tab title repeats the site name except on the homepage, where the title
+// already carries it.
+const documentTitle = title === SITE.title ? title : `${title} — ${SITE.name}`;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  ...(type === 'article'
+    ? {
+        '@type': 'Article',
+        headline: title,
+        datePublished: publishedAt?.toISOString(),
+        author: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+        publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+      }
+    : {
+        '@type': 'WebSite',
+        name: SITE.name,
+      }),
+  description,
+  url: canonical.href,
+  ...(image ? { image: image.href } : {}),
+  inLanguage: SITE.locale,
+};
+---
+
+<title>{documentTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical.href} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical.href} />
+<meta property="og:locale" content={SITE.htmlLang.replace('-', '_')} />
+{
+  image && (
+    <>
+      <meta property="og:image" content={image.href} />
+      <meta property="og:image:width" content={String(OG_IMAGE_SIZE.width)} />
+      <meta property="og:image:height" content={String(OG_IMAGE_SIZE.height)} />
+      <meta property="og:image:alt" content={title} />
+    </>
+  )
+}
+{
+  type === 'article' && publishedAt && (
+    <meta property="article:published_time" content={publishedAt.toISOString()} />
+  )
+}
+
+<meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{image && <meta name="twitter:image" content={image.href} />}
+
+<link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />

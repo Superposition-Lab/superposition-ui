@@ -1,0 +1,102 @@
+---
+/**
+ * Labelled rows of chips, where each chip is kept, dropped or highlighted.
+ *
+ * Used for "what you still trust, by mode": reading down a column shows an
+ * item surviving or falling out of the trust base.
+ */
+import Figure from './Figure.astro';
+
+export interface Chip {
+  label: string;
+  /**
+   * kept      — a 1px ink rule; still in play
+   * dropped   — dashed and struck through; no longer trusted
+   * highlight — cyan; what remains once everything else is gone
+   */
+  state?: 'kept' | 'dropped' | 'highlight' | undefined;
+}
+
+export interface ChipRow {
+  label: string;
+  chips: Chip[];
+}
+
+interface Props {
+  rows: ChipRow[];
+  n: number;
+  caption: string;
+  top?: string | undefined;
+}
+
+const { rows, n, caption, top } = Astro.props;
+---
+
+<Figure {n} {caption} {top}>
+  <div class="rows">
+    {
+      rows.map((row) => (
+        <div class="row">
+          <span class="row-label">{row.label}</span>
+          <div class="chips">
+            {row.chips.map((chip) => (
+              <span class:list={['chip', `is-${chip.state ?? 'kept'}`]}>{chip.label}</span>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</Figure>
+
+<style>
+  .rows {
+    display: grid;
+    gap: 14px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .row-label {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    padding: 7px 14px;
+    font-size: 14px;
+    border: 1px solid var(--color-text);
+  }
+
+  .is-dropped {
+    border-style: dashed;
+    border-color: var(--sp-rule-muted);
+    color: var(--sp-on-paper-muted);
+    text-decoration: line-through;
+  }
+
+  .is-highlight {
+    border-color: var(--color-accent);
+    background: var(--color-accent-100);
+    color: var(--color-accent-800);
+  }
+
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+</style>

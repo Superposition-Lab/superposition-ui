@@ -1,0 +1,91 @@
+/*
+ * Tailwind theme bridge — see the commentary in global.css.
+ *
+ * This file contains no values of its own. Every entry points at a token in
+ * tokens.css, which stays the single source of truth.
+ */
+
+@theme inline` maps our tokens onto the Tailwind namespaces WITHOUT
+ * re-declaring them. Tailwind substitutes the `var()` reference straight into
+ * the generated utility, so `tokens.css` stays the only place a value is
+ * written down. Change a token there and every utility follows.
+ *
+ * `--color-*: initial` first clears the Tailwind stock palette: there is no
+ * `bg-red-500` on this site, only the design system inks. That is the point —
+ * an off-palette color should be a compile-time impossibility, not a code
+ * review catch.
+ */
+@theme inline {
+  --color-*: initial;
+  --font-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
+  /* Ground */
+  --color-paper: var(--color-bg);
+  --color-ink: var(--color-text);
+  --color-surface: var(--color-surface);
+  --color-divider: var(--color-divider);
+
+  /* Cyan — the interactive color */
+  --color-accent: var(--color-accent);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-200: var(--color-accent-200);
+  --color-accent-300: var(--color-accent-300);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+  --color-accent-800: var(--color-accent-800);
+  --color-accent-900: var(--color-accent-900);
+
+  /* Magenta — a rare spot color */
+  --color-accent-2: var(--color-accent-2);
+  --color-accent-2-100: var(--color-accent-2-100);
+  --color-accent-2-200: var(--color-accent-2-200);
+  --color-accent-2-300: var(--color-accent-2-300);
+  --color-accent-2-400: var(--color-accent-2-400);
+  --color-accent-2-500: var(--color-accent-2-500);
+  --color-accent-2-600: var(--color-accent-2-600);
+  --color-accent-2-700: var(--color-accent-2-700);
+  --color-accent-2-800: var(--color-accent-2-800);
+  --color-accent-2-900: var(--color-accent-2-900);
+
+  /* Neutrals */
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-200: var(--color-neutral-200);
+  --color-neutral-300: var(--color-neutral-300);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-600: var(--color-neutral-600);
+  --color-neutral-700: var(--color-neutral-700);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+
+  /* Process yellow — print treatments only */
+  --color-process-yellow: var(--color-process-yellow);
+
+  /* Site tokens */
+  --color-navy: var(--sp-navy);
+  --color-on-dark: var(--sp-on-dark);
+  --color-on-dark-secondary: var(--sp-on-dark-secondary);
+  --color-on-paper-secondary: var(--sp-on-paper-secondary);
+  --color-on-paper-tertiary: var(--sp-on-paper-tertiary);
+  --color-on-paper-muted: var(--sp-on-paper-muted);
+  --color-rule-muted: var(--sp-rule-muted);
+
+  /* Type */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  /* Elevation */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}

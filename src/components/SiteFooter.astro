@@ -1,0 +1,39 @@
+---
+/**
+ * The site footer. Anything passed as children is appended after a middot,
+ * which is how the post page adds its "Home" link.
+ */
+import { SITE } from '~/config';
+
+interface Props {
+  /** Extra top padding, for pages that do not end in a full-bleed section. */
+  spacious?: boolean;
+}
+
+const { spacious = false } = Astro.props;
+const hasExtras = Astro.slots.has('default');
+---
+
+<footer class:list={['site-footer', { spacious }]}>
+  &copy; {SITE.foundedYear}
+  {SITE.name} &mdash; research &amp; development{
+    hasExtras && (
+      <>
+        {' '}
+        &middot; <slot />
+      </>
+    )
+  }
+</footer>
+
+<style>
+  .site-footer {
+    font-size: 13px;
+    line-height: 28px;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .site-footer.spacious {
+    padding-top: 100px;
+  }
+</style>

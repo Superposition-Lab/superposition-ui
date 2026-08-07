@@ -1,0 +1,27 @@
+---
+/**
+ * The content column. Every band and section on the site shares this measure,
+ * so it lives in exactly one place.
+ */
+import type { HTMLTag, Polymorphic } from 'astro/types';
+
+type Props<Tag extends HTMLTag = 'div'> = Polymorphic<{ as: Tag }> & {
+  /** Extra bottom padding, in any CSS length. */
+  class?: string;
+};
+
+const { as: Tag = 'div', class: className, ...rest } = Astro.props;
+---
+
+<Tag class:list={['wrap', className]} {...rest}>
+  <slot />
+</Tag>
+
+<style>
+  .wrap {
+    max-width: var(--sp-wrap);
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: var(--sp-gutter);
+  }
+</style>

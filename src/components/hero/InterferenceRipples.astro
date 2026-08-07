@@ -1,0 +1,60 @@
+---
+/**
+ * Two full-bleed layers of concentric 2px rings, one cyan and one magenta, each
+ * breathing on its own period. Neither layer is the effect — the moiré where
+ * they cross is, which is why the periods (44px / 52px) and the durations
+ * (16s / 19s) are deliberately coprime-ish: the pattern never repeats cleanly.
+ *
+ * Decorative and aria-hidden. Motion stops under prefers-reduced-motion,
+ * leaving a static interference pattern.
+ */
+---
+
+<div class="ripple ripple-a" aria-hidden="true"></div>
+<div class="ripple ripple-b" aria-hidden="true"></div>
+
+<style>
+  .ripple {
+    position: absolute;
+    /* Overscanned so the scaling never exposes an edge. */
+    inset: -25%;
+  }
+
+  .ripple-a {
+    background: repeating-radial-gradient(
+      circle at 32% 42%,
+      rgba(102, 199, 228, 0.13) 0 2px,
+      transparent 2px 44px
+    );
+    animation: sp-ripple-a 16s ease-in-out infinite;
+  }
+
+  .ripple-b {
+    background: repeating-radial-gradient(
+      circle at 68% 58%,
+      rgba(240, 118, 178, 0.1) 0 2px,
+      transparent 2px 52px
+    );
+    animation: sp-ripple-b 19s ease-in-out infinite;
+  }
+
+  @keyframes sp-ripple-a {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.22);
+    }
+  }
+
+  @keyframes sp-ripple-b {
+    0%,
+    100% {
+      transform: scale(1.18);
+    }
+    50% {
+      transform: scale(1);
+    }
+  }
+</style>

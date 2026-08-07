@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://superposition.xyz/sitemap-index.xml

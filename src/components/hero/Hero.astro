@@ -1,0 +1,99 @@
+---
+/**
+ * The homepage hero: navy band, nav, headline, and the decorative animation.
+ */
+import SiteNav from '~/components/SiteNav.astro';
+import Wrap from '~/components/Wrap.astro';
+
+import InterferenceRipples from './InterferenceRipples.astro';
+import OrbitSystem from './OrbitSystem.astro';
+
+interface Props {
+  /** Headline, one array entry per rendered line. */
+  headline: readonly string[];
+  subhead: string;
+  cta?: { label: string; href: string } | undefined;
+}
+
+const { headline, subhead, cta } = Astro.props;
+---
+
+<header class="hero">
+  <InterferenceRipples />
+  <OrbitSystem />
+
+  <SiteNav brandIsLink={false} />
+
+  <Wrap class="hero-content">
+    <h1 class="headline">
+      {
+        headline.map((line, i) =>
+          i === 0 ? (
+            line
+          ) : (
+            <>
+              <br />
+              {line}
+            </>
+          ),
+        )
+      }
+    </h1>
+
+    <p class="subhead">{subhead}</p>
+
+    {
+      cta && (
+        <div class="actions">
+          <a class="btn btn-primary" href={cta.href}>
+            {cta.label}
+          </a>
+        </div>
+      )
+    }
+  </Wrap>
+</header>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--sp-navy);
+    color: var(--sp-on-dark);
+    overflow: hidden;
+  }
+
+  .hero-content {
+    position: relative; /* above the animation layers */
+    padding-block: clamp(80px, 12vh, 130px) clamp(80px, 11vh, 120px);
+  }
+
+  .headline {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: clamp(48px, 6.5vw, 84px);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    /* Optical alignment: pull the first glyph left so its stem, not its
+       sidebearing, lines up with the copy below. */
+    margin: 0 0 0 -0.035em;
+    /* Misregistration — the cyan and magenta plates a breath out of true, the
+       way a press drifts. The house signature, applied at display sizes only. */
+    text-shadow:
+      0.022em 0.016em 0 rgba(0, 163, 209, 0.55),
+      -0.02em -0.014em 0 rgba(214, 0, 108, 0.4);
+  }
+
+  .subhead {
+    font-size: 19px;
+    line-height: 30px;
+    max-width: 42ch;
+    margin: 44px 0 0;
+    color: var(--sp-on-dark-secondary);
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+</style>

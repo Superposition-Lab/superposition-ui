@@ -1,0 +1,227 @@
+---
+/**
+ * A journal article.
+ *
+ * Owns the article chrome (header, prose typography, footer). The MDX body is
+ * rendered into the `.prose` column, so a post file only ever contains prose
+ * and figure components — never layout.
+ */
+import SiteFooter from '~/components/SiteFooter.astro';
+import SiteNav from '~/components/SiteNav.astro';
+import Wrap from '~/components/Wrap.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { formatIssue, type Writing } from '~/lib/writings';
+
+interface Props {
+  entry: Writing;
+  ogImage: string;
+}
+
+const { entry, ogImage } = Astro.props;
+const { title, standfirst, tag, publishedAt, issue, description, draft } = entry.data;
+
+const publishedLabel = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(publishedAt);
+---
+
+<BaseLayout
+  title={title}
+  description={description ?? standfirst}
+  type="article"
+  publishedAt={publishedAt}
+  ogImage={ogImage}
+  noindex={draft}
+>
+  <div class="band">
+    <SiteNav />
+  </div>
+
+  <Wrap class="sheet">
+    <article id="main">
+      <header class="post-header">
+        <div class="meta">
+          <span class="issue">{formatIssue(issue)}</span>
+          <span class="tag tag-accent-2">{tag}</span>
+          <time datetime={publishedAt.toISOString()}>{publishedLabel}</time>
+        </div>
+
+        <h1>{title}</h1>
+        <p class="standfirst">{standfirst}</p>
+      </header>
+
+      <div class="prose">
+        <slot />
+      </div>
+    </article>
+
+    <SiteFooter spacious>
+      <a href="/">Home</a>
+    </SiteFooter>
+  </Wrap>
+</BaseLayout>
+
+<style>
+  .band {
+    background: var(--sp-navy);
+    color: var(--sp-on-dark);
+  }
+
+  .sheet {
+    padding-block: clamp(56px, 8vh, 96px) 120px;
+  }
+
+  /* ── Article header ─────────────────────────────────────────────────── */
+
+  .meta {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .issue {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--color-accent-700);
+  }
+
+  .meta time {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sp-on-paper-tertiary);
+  }
+
+  .post-header h1 {
+    font-size: clamp(36px, 4.6vw, 56px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    /* Optical alignment, as in the hero. */
+    margin: 28px 0 0 -0.035em;
+    max-width: var(--sp-measure);
+  }
+
+  .standfirst {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 34px;
+    color: var(--sp-on-paper-secondary);
+    max-width: var(--sp-measure);
+    margin: 28px 0 0;
+  }
+
+  /* ── Body ───────────────────────────────────────────────────────────────
+     These target markdown output, so they are element selectors rather than
+     classes. `:global` because the MDX body is not scoped to this component. */
+
+  /* Figures are excluded: each one sets its own measure, and some are narrower
+     than the text column. Scoping the rule here rather than overriding it in
+     Figure.astro avoids a specificity fight — Astro scoped selectors add no
+     specificity of their own, so the override would lose. */
+  .prose :global(> :not(figure)) {
+    max-width: var(--sp-measure);
+  }
+
+  .prose :global(p) {
+    font-size: 17px;
+    line-height: 28px;
+    margin: 24px 0 0;
+    /* Justified with hyphenation — the broadsheet register. Without `hyphens`
+       justification would open rivers of white space at this measure. */
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  .prose :global(h2) {
+    font-size: 30px;
+    line-height: 36px;
+    letter-spacing: -0.015em;
+    margin: 84px 0 0;
+  }
+
+  .prose :global(h2 + p) {
+    margin-top: 26px;
+  }
+
+  .prose :global(h3) {
+    font-size: 22px;
+    line-height: 30px;
+    margin: 48px 0 0;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    font-size: 17px;
+    line-height: 28px;
+    margin: 24px 0 0;
+    padding-left: 1.4em;
+  }
+
+  .prose :global(li + li) {
+    margin-top: 8px;
+  }
+
+  .prose :global(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: 14.5px;
+    background: var(--color-neutral-100);
+    padding: 1px 5px;
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(pre) {
+    font-size: 13.5px;
+    line-height: 22px;
+    background: var(--color-neutral-100) !important;
+    padding: 18px 22px;
+    overflow-x: auto;
+    margin: 28px 0 0;
+    border-radius: var(--radius-md);
+  }
+
+  .prose :global(pre code) {
+    font-size: inherit;
+    background: none;
+    padding: 0;
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin: 32px 0 0;
+  }
+
+  .prose :global(th) {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--color-divider);
+  }
+
+  .prose :global(td) {
+    padding: var(--space-2);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  .prose :global(tbody tr:hover) {
+    background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  }
+
+  .prose :global(blockquote) {
+    margin: 32px 0 0;
+    padding-left: 22px;
+    border-left: 2px solid var(--color-divider);
+    font-style: italic;
+    color: var(--sp-on-paper-secondary);
+  }
+</style>
