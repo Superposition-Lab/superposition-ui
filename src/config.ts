@@ -8,7 +8,7 @@
 
 export const SITE = {
   /** Canonical origin, no trailing slash. Drives sitemap, RSS and OG URLs. */
-  url: 'https://superposition.pages.dev',
+  url: 'https://superposition-lab.pages.dev',
   name: 'Superposition',
   title: 'Superposition — research & development',
   description:
