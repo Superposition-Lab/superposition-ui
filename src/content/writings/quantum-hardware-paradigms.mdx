@@ -1,0 +1,293 @@
+---
+issue: 2
+title: The hardware paradigms of quantum computing
+standfirst: Qubit counts put unlike machines on one axis. We score six hardware platforms on the errors, timings, connections and error-correction results that decide what each can do, with every number sourced and dated.
+publishedAt: 2026-08-25
+tag: Analysis
+---
+
+import Disclaimer from '~/components/Disclaimer.astro';
+import CellGrid from '~/components/figures/CellGrid.astro';
+import ChipRows from '~/components/figures/ChipRows.astro';
+
+<CellGrid
+  n={1}
+  top="64px"
+  caption="The error-correction ladder, August 2026. L0 physical qubits · L1 a small code, logical worse than physical · L2 break-even · L3 below threshold, logical error falling as the code grows · L4 many logical qubits with logical gates beyond break-even · L5 logical error at or below one in a million. Filled: demonstrated and published. Dashed grey: reached only with post-selection. Dashed magenta: contested. No platform has reached L5."
+  rows={[
+    {
+      label: 'Superconducting',
+      note: 'below threshold; one or two logical qubits',
+      cells: [
+        { label: 'L0', state: 'filled' },
+        { label: 'L1', state: 'filled' },
+        { label: 'L2', state: 'filled' },
+        { label: 'L3', state: 'filled' },
+        { label: 'L4' },
+        { label: 'L5' },
+      ],
+    },
+    {
+      label: 'Trapped ions',
+      note: '48 error-corrected logical qubits with gates',
+      cells: [
+        { label: 'L0', state: 'filled' },
+        { label: 'L1', state: 'filled' },
+        { label: 'L2', state: 'filled' },
+        { label: 'L3', state: 'filled' },
+        { label: 'L4', state: 'filled' },
+        { label: 'L5' },
+      ],
+    },
+    {
+      label: 'Neutral atoms',
+      note: 'below threshold; logic with post-selection',
+      cells: [
+        { label: 'L0', state: 'filled' },
+        { label: 'L1', state: 'filled' },
+        { label: 'L2', state: 'filled' },
+        { label: 'L3', state: 'filled' },
+        { label: 'L4', state: 'skipped' },
+        { label: 'L5' },
+      ],
+    },
+    {
+      label: 'Spins',
+      note: 'repetition code only',
+      cells: [
+        { label: 'L0', state: 'filled' },
+        { label: 'L1', state: 'filled' },
+        { label: 'L2' },
+        { label: 'L3' },
+        { label: 'L4' },
+        { label: 'L5' },
+      ],
+    },
+    {
+      label: 'Photonics',
+      note: 'distance-2 code, far above threshold',
+      cells: [
+        { label: 'L0', state: 'filled' },
+        { label: 'L1', state: 'filled' },
+        { label: 'L2' },
+        { label: 'L3' },
+        { label: 'L4' },
+        { label: 'L5' },
+      ],
+    },
+    {
+      label: 'Topological',
+      note: 'the qubit itself is disputed',
+      noteFlagged: true,
+      cells: [
+        { label: 'L0', state: 'broken' },
+        { label: 'L1' },
+        { label: 'L2' },
+        { label: 'L3' },
+        { label: 'L4' },
+        { label: 'L5' },
+      ],
+    },
+  ]}
+/>
+
+## In short
+
+Every quantum hardware company reports a qubit count. The number says little by itself. A useful machine also needs low error across the whole device, gates and measurements fast enough to repeat error correction, connections between the qubits that a code expects, and classical control that keeps up with the resulting stream of data. This survey scores six platforms on those quantities, from primary sources, as of August 2026.
+
+No platform wins on every axis. Superconducting circuits are the fastest, running a full error-correction round in about a microsecond, and were the first to show logical error falling as a code grows; their two-qubit errors sit near one part in a thousand and every qubit needs its own wiring. Trapped ions have the lowest errors of any platform, below one part in a thousand across a 98-qubit processor, and have run 48 error-corrected logical qubits; they spend most of their time moving and cooling ions. Neutral atoms hold thousands of identical qubits and have crossed the error-correction threshold too, on a clock ten thousand times slower. Semiconductor spins run nanosecond gates on 300-millimetre production lines and operate eighteen qubits at most. Photonics has no decoherence and a loss problem it has not yet solved; no photonic logical qubit exists below threshold. Topological qubits remain a claim under dispute.
+
+Each platform is a bet on where the error-correction bill is cheapest to pay: in physical qubits, in time, or in engineering that does not exist yet. The numbers locate the work rather than a winner. We separate a record on one pair of qubits from a device-wide result, and both from a vendor roadmap. Mixing those three categories is how a benchmark becomes a press release.
+
+## A qubit is not a unit of computing
+
+A physical qubit can be an ion suspended above a trap, a current in a superconducting circuit, a spin confined in silicon, an atom held by light or a photon moving through a chip. Each can represent the same mathematical state. The machines built around them inherit different clocks, connections, failure modes and cooling requirements.
+
+This makes raw qubit count a poor common unit. Ten excellent qubits can run a deeper circuit than a hundred noisy ones. A processor with local connections may spend many operations moving information that another processor can couple directly. A slow gate can still be useful when coherence lasts seconds; a fast gate can still lose when readout or classical feedback stalls every error-correction round.
+
+The comparison becomes stricter once logical qubits enter the picture. A logical qubit spreads information across many physical qubits so that repeated measurements can reveal errors without revealing the state itself. Its cost depends on the physical error rate, the code, the required logical error rate, the speed of measurement and decoding, and the number of non-Clifford gates the algorithm consumes. "One million qubits" omits most of the calculation.
+
+"Paradigm" has two meanings here, and the title uses the hardware one. The model of computation says how a computation is expressed: as a circuit of gates, as a slow sweep of a Hamiltonian toward the answer (annealing), as a physical system imitating another (analog simulation), or as measurements consuming a prepared entangled state (measurement-based and fusion-based schemes). The platform says what the qubit is made of. Most platforms below run the gate model. Photonic machines are measurement-based, because two photons cannot be made to interact on demand. Annealers run a different model altogether, and we treat them separately at the end. A topological qubit is not a model but a hardware route to the gate model.
+
+## The scorecard
+
+We record seven fields for each platform.
+
+| Field                | What we look for                                                                                                                                    |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two-qubit error      | A device-wide mean or median, with a best-pair record shown separately. Entangling gates usually set the physical error budget.                     |
+| Operation time       | Gate, measurement and reset times, then a full error-correction round when one has been reported.                                                   |
+| Coherence            | The relevant memory time under the same operating conditions, not the longest isolated laboratory record.                                           |
+| Connectivity         | Which pairs can interact, and the time and error paid to move information between them.                                                             |
+| Operated qubits      | Qubits initialized, controlled and measured together. Fabricated dots, atoms loaded into a chamber and roadmap targets go in different columns.     |
+| QEC milestone        | Repetition or detection experiment, below-threshold logical memory, logical gate, or universal fault-tolerant operation. These are different rungs. |
+| Engineering boundary | The subsystem that has to scale next: wiring, lasers, cryogenics, fabrication yield, interconnects, readout or decoding.                            |
+
+A result earns a date as well as a source. Hardware changes quickly enough that "state of the art" without a date is an invitation to compare experiments from different generations.
+
+## Superconducting circuits: the fast clock, and the first below threshold
+
+A superconducting qubit is a lithographically patterned circuit, aluminium, tantalum or niobium on silicon or sapphire, in which a Josephson junction makes an oscillator anharmonic, so that its two lowest energy levels can serve as a qubit. It runs at ten to twenty millikelvin. Gates are microwave or flux pulses of tens of nanoseconds; readout is dispersive and takes a few hundred nanoseconds to a microsecond. Transmons are the mainstream variant (Google, IBM, Rigetti, IQM, USTC). Fluxonium trades harder control for lower error. Cat and GKP qubits (AWS, Alice & Bob, Nord Quantique) store the qubit in an oscillator whose noise is biased, so that less outer correction is needed.
+
+Speed is the defining trait. Google's [Willow](https://quantumai.google/static/site-assets/downloads/willow-spec-sheet.pdf), 105 qubits, runs a surface-code cycle of gates, measurement and reset in 1.1 microseconds, and its device-wide two-qubit errors, measured simultaneously across the chip, were 0.14% for its native gate and 0.33% for CZ. Records on isolated pairs are better: a [fluxonium CNOT at 6×10⁻⁴ error](https://arxiv.org/abs/2407.15783) held for 24 days, and IQM reported [above 99.9% on a two-qubit device](https://arxiv.org/abs/2508.16437). Fleet medians are worse: IQM's 54-qubit [Radiance](https://iqm.tech/products/iqm-radiance/) specifies a median CZ error of 0.5%, and Rigetti reports [99.1% median](https://thequantuminsider.com/2026/08/07/rigetti-computing-reports-second-quarter-2026-financial-results/) on its 108-qubit chip. IBM's largest deployed processors are the 156-qubit Heron and the [120-qubit Nighthawk](https://www.prnewswire.com/news-releases/ibm-delivers-new-quantum-processors-software-and-algorithm-breakthroughs-on-path-to-advantage-and-fault-tolerance-302612409.html); its [1,121-qubit Condor](https://en.wikipedia.org/wiki/IBM_Condor) of December 2023 was demonstrated once and never became the deployed device.
+
+Error correction here is a memory result. In December 2024, Willow showed the logical error of a surface-code memory [falling by a factor of 2.14](https://arxiv.org/abs/2408.13687) each time the code distance grew from three to five to seven, reaching 0.143% per cycle at distance seven with real-time decoding. A [July 2026 follow-up](https://www.nature.com/articles/s41586-026-10759-2) with reinforcement-learned calibration brought that to 7.7×10⁻⁴ per cycle. USTC's Zuchongzhi 3.2 became the [second processor below threshold](https://arxiv.org/abs/2505.01978) in December 2025, with a suppression factor of 1.40 at distance seven on 107 qubits and an all-microwave method for removing leakage. What has not been shown is logic. Logical qubit counts on superconducting hardware remain one or two, and no logical two-qubit gate below the physical error rate has been published; Google's [colour-code experiment](https://arxiv.org/abs/2412.14256) prepared logical states and injected magic states with post-selection.
+
+The engineering boundary is wiring and the error floor. Every qubit needs its own microwave and flux lines, and yield, material defects and frequency crowding keep fleet medians at 10⁻³ to 10⁻² while laboratory records sit at 6×10⁻⁴. Connectivity is planar, so the surface code, with roughly a thousand physical qubits per logical qubit at useful error rates, is the natural code. IBM's route out is a family of qLDPC codes that needs long-range couplers, which it is testing on an experimental chip called Loon, with a [decoder that already meets the sub-microsecond budget](https://arxiv.org/abs/2510.21600) in simulation. Google's own summary is that superconducting qubits are easier to scale in the time dimension; in March 2026 it [added neutral atoms](https://blog.google/innovation-and-ai/technology/research/neutral-atom-quantum-computers/) as a second modality.
+
+## Trapped ions: clean operations, expensive time
+
+A trapped-ion processor stores a qubit in two internal states of an atom. Electric fields hold the ions above a microfabricated trap, laser or microwave pulses drive gates, and state-dependent fluorescence provides readout. Since every ion of one isotope is the same atom, fabrication does not leave the machine with a distribution of qubit frequencies and junction defects to calibrate around.
+
+Quantinuum's [Helios processor](https://arxiv.org/abs/2511.05465) operated 98 ions with an average two-qubit error of 7.9×10⁻⁴ across its gate zones. Its average single-qubit error was 2.5×10⁻⁵. A separate two-ion experiment from Oxford Ionics and IonQ reported an [8.4×10⁻⁵ two-qubit error](https://arxiv.org/abs/2510.17286), while Oxford measured a [1.5×10⁻⁷ error per single-qubit Clifford](https://arxiv.org/abs/2412.04421) on one ion.
+
+Those records answer different questions. The two-ion result shows how accurately one gate can be engineered. Helios shows what survived across a processor almost fifty times larger. Replacing the device-wide number with the record would understate the error-correction budget by nearly an order of magnitude.
+
+Connectivity is the other advantage. Ions in one chain interact through shared motion, giving the machine all-to-all connections within the chain. Larger QCCD processors divide the trap into zones and physically shuttle ions to the place where a gate will run. The compiler can request a gate between distant qubits without laying a path of swap gates across a two-dimensional chip.
+
+Movement still has a price. A two-qubit gate on Helios takes about 70 microseconds, while published trapped-ion gates range into the hundreds of microseconds. A depth-one layer across Helios takes about 55 milliseconds: roughly 25 milliseconds of transport, 20 milliseconds of re-cooling and 10 milliseconds of gates. Measurements and conditional operations add more time. In an earlier H2 timing study, [transport and cooling consumed almost all of the shot](https://arxiv.org/abs/2305.03828); gates accounted for one or two percent.
+
+Long coherence keeps the arithmetic viable. Ion qubits retain state for seconds. Operations per coherence window and errors per error-correction round capture this tradeoff better than gate speed alone. A slow machine can execute deep circuits when memory errors remain low, but it still has to finish repeated logical operations often enough to be useful.
+
+### Error correction is already part of the machine
+
+Helios has been used to create [94 error-detected or 48 error-corrected logical qubits](https://arxiv.org/abs/2602.22211) from 98 physical ions. The same work reported a 94-logical-qubit GHZ state with 94.9% fidelity and logical errors 10–100 times below the corresponding physical errors for the tested circuits and codes. That physical-to-logical ratio is possible because all-to-all connections allow high-rate codes that would be costly on a nearest-neighbour grid.
+
+Smaller experiments have exercised harder parts of universal fault-tolerant computation. Quantinuum researchers prepared a [logical non-Clifford resource state](https://arxiv.org/abs/2506.14688) with an infidelity of about 7×10⁻⁵ after discarding 14.8% of attempts. A companion experiment [switched between Reed–Muller and Steane codes](https://arxiv.org/abs/2506.14169) to implement operations unavailable transversally in either code alone. These experiments exercise working pieces of the machinery an application-scale computation would need.
+
+Scaling now moves the problem from ion quality to architecture. A long chain develops crowded vibrational modes and harder optical addressing. QCCD grids add junctions, parallel gate zones and control hardware. Photonic links can join modules, but the [distributed controlled-Z gate demonstrated between two ion modules](https://arxiv.org/abs/2407.00835) reached 86% fidelity, far below a local gate. The useful scale number is how many zones and links can run in parallel while preserving the error rate of the small system.
+
+## Neutral atoms: thousands of identical qubits on a slow clock
+
+A neutral-atom processor holds single atoms of rubidium, caesium, strontium or ytterbium in an array of focused laser beams inside a room-temperature vacuum cell. The qubit lives in two ground states whose coherence lasts seconds. Single-qubit gates are microwave or Raman pulses. A two-qubit gate briefly promotes neighbouring atoms to a Rydberg state whose interaction blocks double excitation and imprints a conditional phase in a few hundred nanoseconds. Because the tweezers can be steered, atoms are moved between storage, entangling and readout zones in the middle of a circuit, which gives all-to-all connectivity and parallel gates on whole blocks of qubits.
+
+Scale comes cheaply. Caltech held [6,100 caesium atoms](https://arxiv.org/abs/2403.12021) with 12.6-second coherence and 99.983% single-qubit fidelity, though without entangling gates. Harvard kept [more than 3,000 atoms running for over two hours](https://arxiv.org/abs/2506.20660) by reloading continuously. Fidelity has caught up: the best Rydberg CZ gate averaged [99.854% across eight gate sites](https://arxiv.org/abs/2604.25987) in April 2026, against [99.5% on 60 atoms in parallel](https://arxiv.org/abs/2304.05420) in 2023. Vendor specifications sit lower; QuEra's 260-qubit [Gemini](https://www.quera.com/gemini) quotes 99.2% two-qubit fidelity and one shot per second.
+
+Error correction is the platform's strongest showing. The 448-atom architecture from Harvard, MIT and QuEra ([Nature, November 2025](https://arxiv.org/abs/2506.20661)) ran a surface-code memory whose distance-five error was 2.14 times below distance three, executed logical entanglement through transversal gates and lattice surgery, and reused qubits mid-circuit to reach up to 96 distance-four logical qubits and hundreds of logical teleportations. Atom Computing ran [toric codes for 90 syndrome cycles](https://arxiv.org/abs/2606.04079) with mid-circuit measurement, atom replacement and reloading, in June 2026. Two years earlier, [48 logical qubits on 280 atoms](https://arxiv.org/abs/2312.03982) had beaten physical qubits only with post-selection, and the first [logical magic-state distillation](https://arxiv.org/abs/2412.15165) produced logical magic states better than their inputs in 2025. As with ions, reconfigurable connectivity is what makes high-rate codes and transversal logic practical: 96 logical qubits from 448 atoms is an overhead the surface code on a fixed grid cannot approach.
+
+The bill is the clock. Gates take about 300 nanoseconds, but moving an atom takes 0.1–1 millisecond, fluorescence imaging takes "routinely 5–20 milliseconds" by the account of the field's own [July 2026 strategic plan](https://arxiv.org/abs/2607.21554), and Atom Computing's measured error-correction cycles ran 80–150 milliseconds, against 1.1 microseconds on Willow. Atoms are lost at a rate of 0.05–1% per gate or readout and must be replaced; loss at least is heralded, and decoders exploit it. Laser power is the stated limit on the way to ten thousand or a hundred thousand atoms.
+
+## Photonics: no decoherence, and loss instead
+
+A photonic qubit is a single photon in one of two paths or time bins (PsiQuantum, Quandela, QuiX, ORCA), or a Gottesman–Kitaev–Preskill grid state of many photons in one mode (Xanadu). Single-qubit gates are beam splitters and phase shifters. Two photons cannot be made to interact on demand, so every serious architecture is measurement-based: small entangled resource states are made offline and consumed by measurements. In fusion-based computing, the entangling step is a two-photon Bell measurement, and the pattern of successes, failures and lost photons is what the decoder reads. The fusion network is the code, and it [tolerates roughly 10% total loss per photon](https://arxiv.org/abs/2101.09310). Photons do not decohere at room temperature; the detectors are the only cryogenic parts. Loss is the error.
+
+The record is component-level. PsiQuantum's manufacturable-platform paper ([Nature, February 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12095036/)) reports 99.22% fusion fidelity conditioned on detection, 99.98% state preparation and measurement, 99.72% chip-to-chip transfer over 42 metres of fibre, and photon-number-resolving detectors at 98.9% median efficiency, all on 300-millimetre wafers. It also reports a heralded-source efficiency of about 26%, which is why sources must be multiplexed heavily. No operating PsiQuantum computer has been disclosed. The company holds a [$125 million DARPA agreement](https://www.psiquantum.com/news-import/psiquantum-signs-125-million-agreement-with-darpa) for the final validation stage, and its Australian plant's ["end of 2027" target](https://www.psiquantum.com/news-import/psiquantum-to-build-worlds-first-utility-scale-fault-tolerant-quantum-computer-in-australia) from April 2024 no longer has an official successor date.
+
+Xanadu's Aurora ([Nature, January 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC11864973/)) is the largest photonic system operated as a computer: 35 chips and 13 kilometres of fibre producing a cluster state of 86.4 billion modes over two hours, 12 physical qubit modes per clock, running a distance-two repetition code with real-time decoding. It sits far above threshold. Loss on the heralding paths was about 56% against per-component budgets near 1%, and Xanadu's [on-chip GKP states](https://pmc.ncbi.nlm.nih.gov/articles/PMC12176634/) reach 0.62 dB of effective squeezing against the 9.75 dB the scheme needs. Xanadu's April 2026 results release describes "12 logical GKP qubits"; the peer-reviewed record is 12 physical modes in a distance-two code. As of August 2026, no photonic platform has demonstrated a below-threshold logical qubit.
+
+## Semiconductor spins: a manufacturing bet with a control problem
+
+Semiconductor spin qubits store information in the spin of an electron or hole confined in a quantum dot, or in the electron and nuclear spins of a donor atom placed in silicon. Electric or microwave pulses rotate one spin. A voltage pulse turns on the exchange interaction between neighbouring dots for a two-qubit gate. Readout converts spin into charge and senses that charge nearby.
+
+The attraction is physical density. A spin qubit occupies roughly a hundred nanometres. Isotopically enriched silicon removes much of the magnetic noise from nuclear spins. Gates are electrical, and several groups now fabricate devices on 200 or 300 millimetre semiconductor lines.
+
+The strongest manufacturing result is easy to misquote. Intel fabricated and characterized more than 24,000 quantum-dot devices per wafer, tuning [96% of them to the single-electron regime](https://arxiv.org/html/2410.16583v1). The 24,000 figure measures process uniformity; the corresponding Tunnel Falls processor contains 12 dots in a line.
+
+Diraq and imec reported [four foundry-fabricated devices](https://pmc.ncbi.nlm.nih.gov/articles/PMC12488496/) in which every measured operation exceeded 99% fidelity. Their two-qubit errors ranged from 0.44% to 0.96%. HRL's exchange-only processor reported a mean CNOT error of 0.3%, with its best reproducible pair at 0.09%, and combined the quantum chip with a [70-million-transistor controller at 4 kelvin](https://arxiv.org/html/2604.16216). RIKEN has measured [single-qubit errors below 10⁻⁴](https://arxiv.org/abs/2507.11918) on individual qubits in a five-qubit array, rising to about 10⁻³ when all five were driven together.
+
+Crosstalk, charge noise and local calibration all appear when the array runs as a device. Published two-qubit errors across foundry devices remain around 0.5–1%, even when individual single-qubit gates reach another decimal place.
+
+Spin gates are fast. Published controlled-Z gates take roughly 100–500 nanoseconds, and exchange pulses can be shorter. Readout is slower, often 10–100 microseconds, because the machine must distinguish a tiny charge signal. Connectivity is local: dots exchange information with neighbours in one-dimensional chains or small two-dimensional arrays. Researchers have moved spins through silicon to avoid a swap at every step, including [two-qubit logic with a mobile spin](https://arxiv.org/abs/2503.15434), but shuttling remains an experiment rather than a device-wide interconnect.
+
+The operated arrays are small. A germanium device initialized, controlled and read [18 qubits simultaneously](https://arxiv.org/html/2604.01063v1) in a 2026 preprint. Intel has operated 12-dot chips, Silicon Quantum Computing has operated an [11-qubit donor processor](https://arxiv.org/html/2506.03567v1), and other published arrays contain fewer. These machines fit in a corner of the qubit-count charts occupied by platforms with tens or hundreds of qubits.
+
+### Error correction has reached one channel at a time
+
+RIKEN demonstrated a [three-qubit phase-flip code](https://arxiv.org/pdf/2201.08581) in 2022. HRL has since run a [distance-five repetition code](https://arxiv.org/html/2604.16216) on seven physical qubits for 200 rounds. The logical error was about 5×10⁻³ per round, and the suppression factor from distance three to distance five was 4.7. The same chip ran a `[[4,2,2]]` error-detecting code with 95% logical fidelity after rejecting 77% of shots; without post-selection, the fidelity was 59%.
+
+These results prove repeated measurement, feedback and autonomous cryogenic control on a spin device. A full logical memory has yet to outperform its physical qubits under error correction. A repetition code protects one error channel, while a useful logical qubit has to correct both bit and phase errors without discarding most runs.
+
+The hardware around HRL's seven-qubit experiment shows where scaling becomes a systems problem. The chip used 296 superconducting traces for 54 dots, and its cryogenic controller dissipated 3.5 watts at 4 kelvin. A large processor cannot assign several room-temperature wires and a hand-tuned waveform to every dot. Multiplexed readout, shared control, cryogenic electronics and automated tuning have to improve together.
+
+Semiconductor fabrication offers a route to dense, repeated structures. It does not confer semiconductor yield on a quantum processor by association. Valley splitting and charge disorder still vary from dot to dot, and each variation changes how the qubit must be tuned. The decisive demonstration will be a large foundry-made array whose device-wide two-qubit errors stay below the level already reached on a few devices, with wiring and readout included.
+
+## Topological qubits, annealers and analog machines
+
+Microsoft's topological programme is the one platform whose qubit is itself in dispute. The peer-reviewed result ([Nature, February 2025](https://www.nature.com/articles/s41586-024-08445-2)) is a single-shot parity measurement in an indium arsenide–aluminium nanowire, with a 1% assignment error. The authors write that the measurement does not by itself determine whether the states are topological, and Nature's editorial note says the results ["do not represent evidence for the presence of Majorana zero modes"](https://physicsworld.com/a/experts-weigh-in-on-microsofts-topological-qubit-claim/). Microsoft's [release the same day](https://azure.microsoft.com/en-us/blog/quantum/2025/02/19/microsoft-unveils-majorana-1-the-worlds-first-quantum-processor-powered-by-topological-qubits/) announced the world's first topoconductor and eight topological qubits. A [July 2025 preprint](https://arxiv.org/abs/2507.08795) reported a tetron with lifetimes of 14.5 microseconds and 12.4 milliseconds in its two measurement bases; a June 2026 ["Majorana 2"](https://news.microsoft.com/source/features/innovation/majorana-2-microsoft-discovery-agentic-ai/) announcement reported a 22-second parity lifetime from one wire; and Nature published a [Matters Arising](https://www.nature.com/articles/s41586-026-10567-8) in June 2026 arguing that the readout regions were disordered and gapless, with Microsoft's reply standing by the results. An independent QuTech experiment [read out parity in a two-site Kitaev chain](https://www.nature.com/articles/s41586-025-09927-7), a "poor man's Majorana" with explicitly limited protection. No error correction, no logical qubit and no independent replication of the topological claim exist. On our ladder the platform is a contested L0.
+
+Annealers are a different model of computation. D-Wave's [Advantage2](https://www.dwavequantum.com/company/newsroom/press-release/d-wave-announces-general-availability-of-advantage2-quantum-computer-its-most-advanced-and-performant-system/), with more than 4,400 flux qubits, runs adiabatic optimisation on a transverse-field Ising Hamiltonian, which is [not equivalent to a gate-model computer in practice](https://arxiv.org/abs/1611.04471). D-Wave's [Science paper](https://www.science.org/doi/abs/10.1126/science.ado6285) claiming beyond-classical spin-glass dynamics drew [tensor-network](https://arxiv.org/abs/2503.05693) and [variational](https://arxiv.org/abs/2503.08247) rebuttals within weeks, one of which is now itself in Science; D-Wave [maintains](https://www.dwavequantum.com/company/newsroom/press-release/d-wave-s-quantum-supremacy-result-stands/) that the largest instances remain out of classical reach. Analog simulators such as QuEra's Aquila and Pasqal's Orion run programmable Hamiltonians on the same neutral-atom hardware used for digital gates. They are useful physics instruments and are not universal computers. Neither annealers nor analog machines run error correction as the other rows do, so they do not appear in the scorecard.
+
+## The scorecard, filled in
+
+The table uses representative device-wide results. Component records stay separate, in the text above; every cell has a date and a source there.
+
+| Platform            | Largest operated system                                                                                | Representative device-wide 2Q error                                                               | Entangling operation and round time                                     | Connectivity                                                             | Strongest QEC evidence                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Superconducting     | 156 (IBM Heron), 120 (Nighthawk), 105 (Willow) in service; 1,121 (Condor) demonstrated once            | 0.14% native / 0.33% CZ across Willow; 0.5% median on a 54-qubit IQM device; record 6×10⁻⁴        | 30–60 ns gate; 1.1 µs full round                                        | Fixed planar lattice; routing by swaps; long-range couplers experimental | Below-threshold surface-code memory, suppression 2.14 (d = 3→7), 7.7×10⁻⁴ per cycle; second platform at 1.40; no logical two-qubit gate below physical |
+| Trapped ions        | 98 (Helios)                                                                                            | 7.9×10⁻⁴ average across zones; record 8.4×10⁻⁵ on two ions                                        | ~70 µs gate; ~55 ms per depth-one layer                                 | All-to-all through transport; transport and cooling dominate             | 48 error-corrected or 94 error-detected logical qubits from 98; logical non-Clifford states; logical error 10–100× below physical                      |
+| Neutral atoms       | 448 (logical processor); 6,100 held with 1Q gates; 3,000+ sustained with reloading                     | 0.5% on 60 atoms in parallel; 99.85% average over eight sites (record); 0.8% vendor spec          | ~300 ns gate; moves 0.1–1 ms; imaging 5–20 ms; 80–150 ms measured round | Reconfigurable all-to-all via transport, 99.95% per move                 | Below threshold d = 3→5 (2.14×) on 448 atoms; up to 96 d = 4 logical qubits with logical gates (post-selected); toric code, 90 cycles                  |
+| Semiconductor spins | 18 (germanium, preprint); 12 (Intel); 11 (SQC donors); 7 in HRL's code                                 | 3×10⁻³ mean CNOT (HRL); 0.44–0.96% across four Diraq/imec devices; record 0.2% on one pair        | 100–500 ns CZ; readout 10–100 µs                                        | Nearest-neighbour exchange, 1D or small 2D; shuttling on small devices   | Distance-five repetition code, 200 rounds; no full logical memory below physical                                                                       |
+| Photonics           | Aurora: 12 qubit modes per clock, 8.6×10¹⁰ modes over 2 h; PsiQuantum: no operating computer disclosed | Fusion 99.22% conditioned on detection; the error is loss, ~56% on heralding paths vs ~1% budgets | 1 MHz clock (Aurora); GHz-class switching claimed                       | Any-to-any by routing; measurement-based                                 | Distance-two repetition code with real-time decoding; no below-threshold logical qubit                                                                 |
+| Topological         | One to four tetrons in prototypes                                                                      | No two-qubit gate published                                                                       | Parity readout, signal-to-noise 1 in 3.6 µs                             | —                                                                        | Single-shot parity readout, contested; no error correction                                                                                             |
+
+### Two clocks
+
+Two clocks appear in the table. Superconducting circuits and spins run gates in nanoseconds and rounds in microseconds. Ions and atoms run rounds in milliseconds to hundreds of milliseconds, because measurement, transport and cooling, not the gates, set the pace. Google's cryptography whitepaper calls these fast-clock and slow-clock architectures, and the label is more useful than any qubit count.
+
+The slow-clock platforms compensate with coherence, seconds against tens or hundreds of microseconds, so the number of rounds a qubit survives is comparable or better. They also compensate with connectivity, which buys cheaper codes: 48 logical qubits from 98 ions, 96 from 448 atoms, against roughly a thousand physical qubits per logical qubit for a surface code on a grid. The fast-clock platforms compensate with iteration. A million rounds a second is what let Willow measure a suppression factor to two decimal places and let a decoder be tested at scale in real time. Their bill is qubits: physical qubits per logical qubit, and wires per physical qubit.
+
+<ChipRows
+  n={2}
+  caption="Where a round's time goes. Cyan marks the step that dominates an error-correction round on each platform; struck through means the step does not exist there. Superconducting rounds run in about a microsecond and are bounded by measurement and reset; QCCD ion processors spend most of a layer moving and re-cooling ions; neutral-atom rounds are dominated by fluorescence imaging, with atom moves second."
+  rows={[
+    {
+      label: 'Superconducting',
+      chips: [
+        { label: 'gates' },
+        { label: 'measure & reset', state: 'highlight' },
+        { label: 'decode' },
+        { label: 'move & cool', state: 'dropped' },
+      ],
+    },
+    {
+      label: 'Trapped ions',
+      chips: [
+        { label: 'gates' },
+        { label: 'measure & reset' },
+        { label: 'decode' },
+        { label: 'move & cool', state: 'highlight' },
+      ],
+    },
+    {
+      label: 'Neutral atoms',
+      chips: [
+        { label: 'gates' },
+        { label: 'measure & reset', state: 'highlight' },
+        { label: 'decode' },
+        { label: 'move & cool' },
+      ],
+    },
+  ]}
+/>
+
+## How to read a hardware claim
+
+Five checks remove most of the ambiguity from a quantum hardware announcement.
+
+1. Count qubits that were operated together. A fabricated dot, a loaded atom, a physical qubit, an encoded qubit and a logical qubit belong in separate columns.
+2. Ask for the distribution of errors. A best pair proves a component can work. A device-wide mean or median says what a compiler and an error-correcting code receive.
+3. Find the full cycle time. A fast two-qubit gate does not rescue a machine whose measurement, reset, transport or decoder stalls the next round.
+4. Name the QEC rung. Error detection with post-selection, a repetition code, a below-threshold logical memory and a universal logical gate set support different claims.
+5. Date the roadmap. "A million qubits" is a vendor target until a device, methods section and benchmark data exist.
+
+Words such as "foundry-made" and "all-to-all" need measurements too. A foundry can produce a two-qubit cell without proving yield on a large quantum array. An ion processor can offer all-to-all logical connectivity while paying tens of milliseconds to move and cool the ions. The adjective describes an architecture; the measurements describe the machine.
+
+"Logical qubit" is the term most in need of a footnote. Google's is a single distance-seven memory, measured per cycle. Quantinuum's [94 are error-detected distance-two codes and its 48 error-corrected distance-four concatenations](https://www.quantinuum.com/blog/skinny-logic-quantum-codes-go-on-a-diet), both with post-selection. Atom Computing and Microsoft's [24](https://arxiv.org/abs/2411.11822) were distance-two error-detected qubits with loss correction. Harvard's 48 gained over physical qubits through error detection. All are real results; none is the same object, and the discard rate of post-selection is the cost the headline omits.
+
+One outside yardstick exists. DARPA's [Quantum Benchmarking Initiative](https://www.darpa.mil/research/programs/quantum-benchmarking-initiative) asks whether any approach can reach utility scale by 2033, and in November 2025 it moved [eleven companies to its Stage B](https://www.darpa.mil/research/programs/quantum-benchmarking-initiative/stage-b-selection): two superconducting (IBM, Nord Quantique), two trapped-ion (IonQ, Quantinuum), two neutral-atom (Atom Computing, QuEra), three spin (Diraq, Quantum Motion, Silicon Quantum Computing) and two photonic (Xanadu, Photonic Inc.). Microsoft and PsiQuantum sit in a [separate track with the same final goals](https://www.darpa.mil/news/2025/quantum-computing-approaches). Selection is not a result. The spread is the point: the agency whose job is to pick a winner has not.
+
+## The cryptanalysis lens
+
+Our [first article](/writings/google-zkp-quantum-attack-bitcoin/) examined circuits for an elliptic-curve attack: about 1,200–1,450 logical qubits and 70–90 million Toffoli gates in total. Those are logical resources. The [whitepaper](https://quantumai.google/static/site-assets/downloads/cryptocurrency-whitepaper.pdf) that produced them turns them physical under stated assumptions, a 10⁻³ physical error rate, a surface-code architecture on a planar superconducting chip and a ten-microsecond control reaction time, and arrives at fewer than half a million physical qubits and 18–23 minutes per key, or 9–12 minutes for a machine that has precomputed the half of the algorithm that does not depend on the key. Every one of those inputs is a row in the scorecard.
+
+The whitepaper itself draws the platform distinction. Producing 70 million Toffolis in nine minutes needs half a million magic states per second. At 50,000 qubit-rounds per magic state and one-microsecond rounds, that is 25,000 physical qubits, small next to the half million running the algorithm. At hundred-microsecond rounds the same rate needs 2.5 million qubits for magic states alone. On a slow-clock machine, then, attacks on keys already exposed on-chain arrive before attacks on a transaction in flight; on a fast-clock machine they arrive together. Cleaner qubits shrink space rather than time: Microsoft's [cross-parameter estimates](https://arxiv.org/abs/2211.07629) put RSA-2048 at 37 million qubits and 6.2 years with hundred-microsecond rounds at 10⁻³ error, 8.6 million qubits and 3.0 years at 10⁻⁴, and 1.5 days on the original qubit count with nanosecond gates. Connectivity is a lever of its own: a [March 2026 neutral-atom analysis](https://arxiv.org/abs/2603.28627) with high-rate qLDPC codes estimates a 256-bit elliptic-curve key at about ten days on 26,000 atoms with one-millisecond rounds, a hundredth of the qubits at a thousandth of the speed.
+
+The scorecard supplies what a logical count leaves out. On a trapped-ion or neutral-atom machine, fidelity and reconfigurable connectivity cut physical qubits per logical qubit while slow rounds stretch the wall clock. On a superconducting or spin machine, nanosecond gates give the clock while current errors, local connections and wiring multiply the qubits. A credible attack estimate exposes both conversions.
+
+We will keep the scorecard as a dated, sourced artifact and revise it as the numbers move, rather than crown a permanent hardware winner. If a number here is wrong or stale, tell us; the next revision will say who caught it.
+
+<Disclaimer>
+  We are not affiliated with any of the companies or research groups discussed. Every figure comes
+  from the linked papers, preprints and first-party documents, as published by August 2026; where a
+  number rests on a vendor specification rather than a paper, the text says so.
+</Disclaimer>
