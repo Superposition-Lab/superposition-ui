@@ -15,8 +15,11 @@ const hasExtras = Astro.slots.has('default');
 ---
 
 <footer class:list={['site-footer', { spacious }]}>
-  &copy; {SITE.foundedYear}
-  {SITE.name} &mdash; research &amp; development{
+  &copy; {SITE.foundedYear}{' '}
+  {SITE.name} &mdash; research &amp; development{' '}
+  &middot; <a href="/rss.xml">RSS</a>{' '}
+  &middot; <a href={SITE.github}>GitHub</a>{' '}
+  &middot; <a href={`mailto:${SITE.email}`}>{SITE.email}</a>{
     hasExtras && (
       <>
         {' '}
@@ -35,5 +38,14 @@ const hasExtras = Astro.slots.has('default');
 
   .site-footer.spacious {
     padding-top: 100px;
+  }
+
+  .site-footer a {
+    color: inherit;
+    transition: color 0.2s ease;
+  }
+
+  .site-footer a:hover {
+    color: var(--color-accent);
   }
 </style>

@@ -15,6 +15,10 @@ export const SITE = {
     'Superposition is a research and development lab working on quantum computers and cryptography.',
   /** Used in the footer and in the RSS copyright field. */
   foundedYear: 2026,
+  /** The lab's GitHub organisation — source of this site and of the experiments. */
+  github: 'https://github.com/Superposition-Lab',
+  /** Public contact address. */
+  email: 'm@splabs.sh',
   locale: 'en',
   /** BCP 47 tag for <html lang>. */
   htmlLang: 'en-US',
