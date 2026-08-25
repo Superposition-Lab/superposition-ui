@@ -1,0 +1,59 @@
+---
+/**
+ * The plate that opens an article.
+ *
+ * Public-domain artwork, credited in full: the caption names the artist, the
+ * work, the holding museum and the licence, and links to the museum's own
+ * record so the attribution is checkable like any other source on this site.
+ */
+import { Image } from 'astro:assets';
+import type { Writing } from '~/lib/writings';
+
+interface Props {
+  art: NonNullable<Writing['data']['art']>;
+}
+
+const { art } = Astro.props;
+---
+
+<figure class="plate">
+  <Image
+    src={art.src}
+    alt={art.alt}
+    widths={[720, 1080, 1440, 1800]}
+    sizes="(max-width: 880px) 100vw, 840px"
+    loading="eager"
+  />
+  <figcaption>
+    {art.artist}, <cite>{art.title}</cite>, {art.date}. <a href={art.href}>{art.holder}</a>, {
+      art.license
+    }.
+  </figcaption>
+</figure>
+
+<style>
+  .plate {
+    margin: 44px 0 0;
+    max-width: var(--sp-measure);
+  }
+
+  .plate :global(img) {
+    width: 100%;
+    height: auto;
+    /* Woodblock prints are printed on toned paper, so they carry their own
+       border; a hairline keeps the sheet from bleeding into the page. */
+    border: 1px solid var(--color-divider);
+    border-radius: var(--radius-md);
+  }
+
+  figcaption {
+    font-size: 13.5px;
+    line-height: 20px;
+    color: var(--sp-on-paper-tertiary);
+    margin-top: 14px;
+  }
+
+  cite {
+    font-style: italic;
+  }
+</style>

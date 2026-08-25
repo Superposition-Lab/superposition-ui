@@ -1,0 +1,54 @@
+---
+issue: 3
+title: A public quantum circuit now matches Google's
+standfirst: "An addendum to № 001: the hidden point-addition circuits were matched in the open within two months, the strategy's own author now argues for publishing, and one number in our analysis gets sharper."
+publishedAt: 2026-08-25
+tag: Note
+art:
+  src: ../../assets/art/003-ejiri.jpg
+  alt: A gust of wind tears sheets of paper from travellers crossing a field, scattering them across the sky, with Mount Fuji in the distance.
+  artist: Katsushika Hokusai
+  title: Ejiri in Suruga Province, from Thirty-six Views of Mount Fuji
+  date: ca. 1830–32
+  holder: The Metropolitan Museum of Art
+  href: https://www.metmuseum.org/art/collection/search/36493
+---
+
+import Disclaimer from '~/components/Disclaimer.astro';
+
+In [№ 001](/writings/google-zkp-quantum-attack-bitcoin/) we reproduced Google Quantum AI's zero-knowledge proofs that the team holds quantum circuits for secp256k1 point addition within stated qubit and gate limits. Point addition is the operation at the heart of a quantum attack on Bitcoin and Ethereum keys. The proofs, published with the team's [whitepaper](https://quantumai.google/static/site-assets/downloads/cryptocurrency-whitepaper.pdf) on 30 March 2026, let anyone check the claimed costs while the circuits stayed secret. That post covered events up to April 2026, when [Trail of Bits](https://blog.trailofbits.com/2026/04/17/we-beat-googles-zero-knowledge-proof-of-quantum-cryptanalysis/) forged a proof that passes the same verifier we ran.
+
+The secrecy lasted two months. On 1 June 2026, André Schrottenloher, a researcher at Inria in Rennes, published circuits that match the hidden ones, working from public papers. The same day, Craig Gidney, the Google researcher whose constructions the proofs were guarding, wrote that the strategy is not worth repeating. This Note records both June developments and sharpens one number in the original post.
+
+## Matched from public papers
+
+Schrottenloher's [preprint](https://arxiv.org/abs/2606.02235) details point-addition circuits for secp256k1 that land within a few percent of the costs Google reported: around 1.5 percent more qubits, and 6.5 to 10 percent fewer Toffoli gates. The Toffoli count matters most, because Toffolis are the expensive operation on an error-corrected machine and they dominate the attack's cost. He also gives a generic version of the circuit that works on any curve over a prime field.
+
+Nothing leaked. Gidney explains the path in a [post published the same day](https://algassert.com/post/2602). The decisive ingredient, a qubit-saving way to multiply inside the circuit, had appeared the previous October in a Google paper on a [different algorithm](https://arxiv.org/abs/2510.10967). Keeping the circuits secret would have meant keeping that earlier paper secret too. Schrottenloher read the team's published work and put the pieces together.
+
+## The author's verdict
+
+Gidney's post is a post-mortem, and it concedes the point. He writes that the team never expected the proofs to survive the year, and he gives three reasons the approach fails for research results. Announcing an unshared solution draws attention to the problem; a public [challenge to build the circuits](https://github.com/gpsanant/quantum_ecc_add/) was created as a direct consequence of the paper. Knowing a solution exists is itself most of the help, since the hard part is often knowing a problem is worth working on. And a proof that you alone hold a dangerous technique tells an adversary exactly who to pressure for it. His conclusion: "We should just publish openly."
+
+## What survives
+
+For the whitepaper's resource estimates, the reconstruction is corroboration. The costs the proofs attested now rest on an open construction anyone can read and check. The warning the whitepaper carries stands.
+
+For the verification idea, the two failures are complementary. Trail of Bits showed that the proof guaranteed less than it appeared to, because the program deciding what counts as a valid circuit is the attack surface. Schrottenloher showed that the secrecy itself bought two months. Together they retire this artifact: for research results whose ingredients are already in the literature, a zero-knowledge proof of quantum capability hides little, and the people who tried it say so.
+
+The question № 001 closed on survives the artifact. Some claims cannot be rebuilt from published work. Those still need a way to be checked without being revealed: a benchmark result a lab keeps private, a graded ladder of capabilities, a canary that signals when migration can no longer wait. № 001 announced two follow-ups, and the June results change them. Producing a proof of our own end to end still stands, because the attestation pipeline is the reusable part. Attesting a circuit for a second curve is dropped, now that open circuits exist for any prime field.
+
+## One number, sharper
+
+№ 001 says the whitepaper argues a quantum computer could break 256-bit elliptic-curve cryptography with fewer than a million physical qubits, the raw hardware qubits that error correction bundles into reliable logical ones. The [whitepaper's](https://quantumai.google/static/site-assets/downloads/cryptocurrency-whitepaper.pdf) own headline is fewer than half a million. That figure rests on stated assumptions: a physical error rate of one in a thousand, a surface code (today's standard error-correction scheme) on superconducting hardware, and a ten-microsecond control reaction time. Our sentence was true and too loose, understating the claim by a factor of two. [№ 002](/writings/quantum-hardware-paradigms/) already carries the precise figure.
+
+## Where this leaves us
+
+The experiment in hiding is over. The circuits were matched in two months at a slightly lower Toffoli count, and the author of the strategy recommends publishing next time. The estimate the proofs supported is intact and now checkable end to end. What remains open is the question the proofs were a first answer to: which claims about quantum capability deserve attestation once publishing is the default.
+
+We are collecting concrete cases: claims about quantum capability, cost or progress that someone needs to make and cannot make in the open. If you have one, or know who does, tell us, and the next piece in this thread will test the strongest candidate.
+
+<Disclaimer>
+  We are not affiliated with Google, Inria or any of the authors discussed. This Note is an addendum
+  to № 001, an independent reproduction of published work.
+</Disclaimer>

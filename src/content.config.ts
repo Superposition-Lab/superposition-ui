@@ -16,30 +16,57 @@ import { defineCollection } from 'astro:content';
  */
 const writings = defineCollection({
   loader: glob({ base: './src/content/writings', pattern: '**/*.{md,mdx}' }),
-  schema: z.object({
-    /** Issue number. Rendered as "№ 001" and used for ordering. */
-    issue: z.number().int().positive(),
+  // A function schema, because `image()` resolves a frontmatter path against
+  // the post's own directory and hands back the metadata `<Image>` needs.
+  schema: ({ image }) =>
+    z.object({
+      /** Issue number. Rendered as "№ 001" and used for ordering. */
+      issue: z.number().int().positive(),
 
-    title: z.string().min(1),
+      title: z.string().min(1),
 
-    /** The italic standfirst under the headline. Also the meta description. */
-    standfirst: z.string().min(1),
+      /** The italic standfirst under the headline. Also the meta description. */
+      standfirst: z.string().min(1),
 
-    /** Shown as "August 2026" on the index and as the machine-readable date. */
-    publishedAt: z.coerce.date(),
+      /** Shown as "August 2026" on the index and as the machine-readable date. */
+      publishedAt: z.coerce.date(),
 
-    /** The magenta pill in the article header. */
-    tag: z.enum(['Analysis', 'Research', 'Note']),
+      /** The magenta pill in the article header. */
+      tag: z.enum(['Analysis', 'Research', 'Note']),
 
-    /**
-     * Overrides the description used for SEO and RSS. Defaults to the
-     * standfirst, which is usually the right summary already.
-     */
-    description: z.string().optional(),
+      /**
+       * The plate under the standfirst: a public-domain artwork, with the
+       * credit the caption renders. Every field is required together, so a
+       * post either carries a fully attributed image or none at all.
+       */
+      art: z
+        .object({
+          /** Path relative to the post file, e.g. `../../assets/art/003-ejiri.jpg`. */
+          src: image(),
+          /** What the print shows, for readers who cannot see it. */
+          alt: z.string().min(1),
+          artist: z.string().min(1),
+          /** Work title, and the series it belongs to. */
+          title: z.string().min(1),
+          /** As the holding museum dates it, e.g. "ca. 1830–32". */
+          date: z.string().min(1),
+          /** The museum, spelled as it wants to be credited. */
+          holder: z.string().min(1),
+          /** The object page, so a reader can check the record. */
+          href: z.string().url(),
+          license: z.string().min(1).default('public domain (CC0)'),
+        })
+        .optional(),
 
-    /** Drafts build locally but are excluded from the index, RSS and sitemap. */
-    draft: z.boolean().default(false),
-  }),
+      /**
+       * Overrides the description used for SEO and RSS. Defaults to the
+       * standfirst, which is usually the right summary already.
+       */
+      description: z.string().optional(),
+
+      /** Drafts build locally but are excluded from the index, RSS and sitemap. */
+      draft: z.boolean().default(false),
+    }),
 });
 
 export const collections = { writings };

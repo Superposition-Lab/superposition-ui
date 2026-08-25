@@ -6,6 +6,7 @@
  * rendered into the `.prose` column, so a post file only ever contains prose
  * and figure components — never layout.
  */
+import PostArt from '~/components/PostArt.astro';
 import SiteFooter from '~/components/SiteFooter.astro';
 import SiteNav from '~/components/SiteNav.astro';
 import Wrap from '~/components/Wrap.astro';
@@ -18,7 +19,7 @@ interface Props {
 }
 
 const { entry, ogImage } = Astro.props;
-const { title, standfirst, tag, publishedAt, issue, description, draft } = entry.data;
+const { title, standfirst, tag, publishedAt, issue, description, draft, art } = entry.data;
 
 const publishedLabel = new Intl.DateTimeFormat('en-US', {
   month: 'long',
@@ -50,6 +51,8 @@ const publishedLabel = new Intl.DateTimeFormat('en-US', {
 
         <h1>{title}</h1>
         <p class="standfirst">{standfirst}</p>
+
+        {art && <PostArt art={art} />}
       </header>
 
       <div class="prose">
