@@ -1,0 +1,225 @@
+---
+/**
+ * A distance-3 rotated surface-code patch, drawn the way the field draws it:
+ * data qubits as circles on a 3×3 grid, checks as shaded tiles between them
+ * (four interior squares, four semicircular boundary lobes), each with its
+ * small check qubit at the center. Named variants draw one moment of the
+ * error-correction story; the caption on the wrapping Figure restates it.
+ *
+ * A schematic, not a stabilizer layout: it keeps the counts honest (9 data,
+ * 8 checks for d = 3) and shows one error type, matching the memory
+ * experiment in the post. Compose with Figure directly, or via PatchPair.
+ */
+
+export type PatchVariant =
+  | 'anatomy' // one check highlighted with the four qubits it watches
+  | 'detect' // one fault, its two nearest checks fired
+  | 'cross' // a line of faults crossing the patch, no checks fired
+  | 'pairing-one' // two fired checks; the one-fault explanation, chosen
+  | 'pairing-three' // the same checks; a three-fault detour, rejected
+  | 'wrong-true' // two edge faults: what actually happened
+  | 'wrong-paired'; // the decoder's cheaper, wrong conclusion
+
+interface Props {
+  variant: PatchVariant;
+  /** Small italic label under the panel, for multi-panel figures. */
+  label?: string | undefined;
+}
+
+const { variant, label } = Astro.props;
+
+/* Data qubits 0–8 at the grid vertices. */
+const data = Array.from({ length: 9 }, (_, i) => ({
+  x: 40 + (i % 3) * 80,
+  y: 40 + Math.floor(i / 3) * 80,
+}));
+
+/* Checks 0–3: interior tiles (path + center). Checks 4–7: boundary lobes. */
+const tiles = [
+  { d: 'M 40 40 H 120 V 120 H 40 Z', cx: 80, cy: 80 },
+  { d: 'M 120 40 H 200 V 120 H 120 Z', cx: 160, cy: 80 },
+  { d: 'M 40 120 H 120 V 200 H 40 Z', cx: 80, cy: 160 },
+  { d: 'M 120 120 H 200 V 200 H 120 Z', cx: 160, cy: 160 },
+  { d: 'M 40 40 A 40 26 0 0 1 120 40 Z', cx: 80, cy: 26 },
+  { d: 'M 200 40 A 26 40 0 0 1 200 120 Z', cx: 214, cy: 80 },
+  { d: 'M 200 200 A 40 26 0 0 1 120 200 Z', cx: 160, cy: 214 },
+  { d: 'M 40 200 A 26 40 0 0 1 40 120 Z', cx: 26, cy: 160 },
+];
+
+const configs: Record<PatchVariant, { flips: number[]; fired: number[]; ghosts?: number[] }> = {
+  anatomy: { flips: [], fired: [] },
+  detect: { flips: [4], fired: [0, 1] },
+  cross: { flips: [3, 4, 5], fired: [] },
+  'pairing-one': { flips: [], fired: [0, 1] },
+  'pairing-three': { flips: [], fired: [0, 1], ghosts: [0, 1, 2] },
+  'wrong-true': { flips: [3, 5], fired: [0, 1] },
+  'wrong-paired': { flips: [3, 5], fired: [0, 1] },
+};
+const cfg = configs[variant];
+
+/* Extra strokes per variant, precomputed so the template only maps. */
+type Line = { x1: number; y1: number; x2: number; y2: number; cls: string };
+const lines: Line[] = [];
+if (variant === 'anatomy') {
+  for (const di of [0, 1, 3, 4]) {
+    const d = data[di];
+    if (d) lines.push({ x1: 80, y1: 80, x2: d.x, y2: d.y, cls: 'watch' });
+  }
+}
+if (variant === 'wrong-true') {
+  lines.push({ x1: 40, y1: 120, x2: 8, y2: 120, cls: 'edge-link' });
+  lines.push({ x1: 200, y1: 120, x2: 232, y2: 120, cls: 'edge-link' });
+}
+const joinCls = variant === 'pairing-one' ? 'join-right' : 'join-wrong';
+if (variant === 'pairing-one' || variant === 'wrong-paired') {
+  lines.push({ x1: 80, y1: 80, x2: 120, y2: 120, cls: joinCls });
+  lines.push({ x1: 120, y1: 120, x2: 160, y2: 80, cls: joinCls });
+}
+
+const chain = variant === 'cross' || variant === 'wrong-paired' ? '40,120 120,120 200,120' : '';
+const highlightCheck = variant === 'anatomy' ? 0 : -1;
+const conclusion = variant === 'pairing-one' || variant === 'wrong-paired';
+const ghostPath = variant === 'pairing-three' ? '80,80 40,40 120,40 200,40 160,80' : '';
+---
+
+<div class="panel">
+  <svg viewBox="-6 -6 252 252" role="img" aria-label={label ?? 'A schematic surface-code patch'}>
+    {tiles.map((t, i) => <path class:list={['tile', { fired: cfg.fired.includes(i) }]} d={t.d} />)}
+    {highlightCheck >= 0 && <path class="strong-outline" d={tiles[highlightCheck]?.d} />}
+    {chain && <polyline class="chain" points={chain} />}
+    {lines.map((l) => <line class={l.cls} x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />)}
+    {ghostPath && <polyline class="ghost" points={ghostPath} />}
+    {conclusion && <circle class="conclusion" cx="120" cy="120" r="13" />}
+    {
+      tiles.map((t, i) => (
+        <rect
+          class:list={['ancilla', { fired: cfg.fired.includes(i) }]}
+          x={t.cx - 4.5}
+          y={t.cy - 4.5}
+          width="9"
+          height="9"
+        />
+      ))
+    }
+    {
+      data.map((d, i) => (
+        <circle
+          class:list={[
+            'data',
+            { flipped: cfg.flips.includes(i), ghosted: cfg.ghosts?.includes(i) },
+          ]}
+          cx={d.x}
+          cy={d.y}
+          r="8"
+        />
+      ))
+    }
+  </svg>
+  {label && <span class="label">{label}</span>}
+</div>
+
+<style>
+  .panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(240px, 100%);
+  }
+
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .tile {
+    fill: var(--color-neutral-200);
+    stroke: var(--color-bg);
+    stroke-width: 2;
+  }
+
+  .tile.fired {
+    fill: var(--color-accent-2-200);
+  }
+
+  .strong-outline {
+    fill: none;
+    stroke: var(--color-text);
+    stroke-width: 1.5;
+  }
+
+  .ancilla {
+    fill: var(--color-neutral-400);
+  }
+
+  .ancilla.fired {
+    fill: var(--color-accent-2);
+  }
+
+  .data {
+    fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .data.flipped {
+    fill: var(--color-accent-2);
+    stroke: var(--color-accent-2);
+  }
+
+  .watch {
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+    stroke-dasharray: 4 3;
+  }
+
+  .chain {
+    fill: none;
+    stroke: var(--color-accent-2);
+    stroke-width: 3;
+    opacity: 0.45;
+  }
+
+  .edge-link {
+    stroke: var(--color-neutral-600);
+    stroke-width: 1.5;
+  }
+
+  .ghost {
+    fill: none;
+    stroke: var(--color-neutral-600);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  .data.ghosted {
+    fill: var(--color-neutral-300);
+    stroke: var(--color-neutral-600);
+    stroke-dasharray: 3 2;
+  }
+
+  .join-right {
+    stroke: var(--color-accent-2);
+    stroke-width: 1.75;
+  }
+
+  .join-wrong {
+    stroke: var(--color-accent-2);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 3;
+  }
+
+  .conclusion {
+    fill: none;
+    stroke: var(--color-accent-2);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+  }
+
+  .label {
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--sp-on-paper-tertiary);
+    text-align: center;
+  }
+</style>

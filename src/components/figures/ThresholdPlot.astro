@@ -1,0 +1,192 @@
+---
+/**
+ * The № 004 threshold plot: logical error rate against the physical error
+ * dial p for three patch sizes, drawn from the E-002 sweep (PyMatching
+ * decoder, 1.52 million runs). The values are baked in below and match
+ * `results/stats.csv` in the experiment repository.
+ *
+ * Log y-axis, direct labels on the line ends instead of a legend, and the
+ * crossing region shaded: left of it larger patches sit lower, right of it
+ * the order flips.
+ */
+import Figure from './Figure.astro';
+
+interface Props {
+  n: number;
+  caption: string;
+  top?: string | undefined;
+}
+
+const { n, caption, top } = Astro.props;
+
+const P = [0.004, 0.006, 0.008, 0.01, 0.012, 0.014];
+const SERIES = [
+  { d: 3, cls: 'd3', rates: [0.0115, 0.0245, 0.0409, 0.0603, 0.0786, 0.1012] },
+  { d: 5, cls: 'd5', rates: [0.0073, 0.0233, 0.0491, 0.0893, 0.1273, 0.1756] },
+  { d: 7, cls: 'd7', rates: [0.0045, 0.0201, 0.0517, 0.1024, 0.1675, 0.2309] },
+];
+
+const X0 = 80;
+const X1 = 590;
+const Y0 = 40;
+const Y1 = 340;
+const VMIN = 0.004;
+const VMAX = 0.3;
+
+const x = (p: number) => X0 + ((p - 0.004) / 0.01) * (X1 - X0);
+const y = (v: number) =>
+  Y0 + ((Math.log10(VMAX) - Math.log10(v)) / (Math.log10(VMAX) - Math.log10(VMIN))) * (Y1 - Y0);
+
+const yTicks = [0.005, 0.01, 0.02, 0.05, 0.1, 0.2].map((v) => ({
+  y: y(v),
+  label: `${(v * 100).toLocaleString('en-US')}%`,
+}));
+const xTicks = P.map((p) => ({ x: x(p), label: `${(p * 100).toFixed(1)}%` }));
+
+const series = SERIES.map((s) => ({
+  ...s,
+  points: s.rates.map((r, i) => ({ x: x(P[i] ?? 0), y: y(r) })),
+  path: s.rates.map((r, i) => `${x(P[i] ?? 0).toFixed(1)},${y(r).toFixed(1)}`).join(' '),
+  endY: y(s.rates[s.rates.length - 1] ?? VMIN),
+}));
+
+const bandX0 = x(0.006);
+const bandX1 = x(0.008);
+---
+
+<Figure {n} {caption} {top} width="100%">
+  <svg viewBox="0 0 660 400" role="img" aria-label={caption}>
+    <rect class="band" x={bandX0} y={Y0} width={bandX1 - bandX0} height={Y1 - Y0}></rect>
+    <text class="band-label" x={(bandX0 + bandX1) / 2} y={Y0 - 8} text-anchor="middle">
+      crossing
+    </text>
+
+    {
+      yTicks.map((t) => (
+        <>
+          <line class="grid" x1={X0} y1={t.y} x2={X1} y2={t.y} />
+          <text class="tick" x={X0 - 10} y={t.y + 4} text-anchor="end">
+            {t.label}
+          </text>
+        </>
+      ))
+    }
+    {
+      xTicks.map((t) => (
+        <text class="tick" x={t.x} y={Y1 + 22} text-anchor="middle">
+          {t.label}
+        </text>
+      ))
+    }
+
+    <line class="axis" x1={X0} y1={Y1} x2={X1} y2={Y1}></line>
+    <line class="axis" x1={X0} y1={Y0} x2={X0} y2={Y1}></line>
+    <text class="axis-label" x={(X0 + X1) / 2} y={Y1 + 46} text-anchor="middle">
+      physical error rate p, per operation
+    </text>
+    <text class="axis-label" x={X0 - 66} y={Y0 - 16}> logical error rate, per run </text>
+
+    {
+      series.map((s) => (
+        <>
+          <polyline class:list={['line', s.cls]} points={s.path} />
+          {s.points.map((pt) => (
+            <circle class:list={['dot', s.cls]} cx={pt.x} cy={pt.y} r="3.5" />
+          ))}
+          <text class:list={['end-label', s.cls]} x={X1 + 10} y={s.endY + 4}>
+            d = {s.d}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+</Figure>
+
+<style>
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .band {
+    fill: var(--color-neutral-200);
+    opacity: 0.6;
+  }
+
+  .band-label {
+    font-size: 12px;
+    font-style: italic;
+    fill: var(--sp-on-paper-tertiary);
+  }
+
+  .grid {
+    stroke: var(--color-divider);
+    stroke-width: 1;
+  }
+
+  .axis {
+    stroke: var(--color-text);
+    stroke-width: 1.25;
+  }
+
+  .tick,
+  .axis-label {
+    font-size: 13px;
+    fill: var(--sp-on-paper-tertiary);
+  }
+
+  .line {
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .dot {
+    stroke: var(--color-bg);
+    stroke-width: 1;
+  }
+
+  .line.d3,
+  .end-label.d3 {
+    stroke: var(--color-neutral-500);
+  }
+
+  .dot.d3 {
+    fill: var(--color-neutral-500);
+  }
+
+  .line.d5,
+  .end-label.d5 {
+    stroke: var(--color-neutral-700);
+  }
+
+  .dot.d5 {
+    fill: var(--color-neutral-700);
+  }
+
+  .line.d7 {
+    stroke: var(--color-text);
+    stroke-width: 2.25;
+  }
+
+  .dot.d7 {
+    fill: var(--color-text);
+  }
+
+  .end-label {
+    font-size: 13.5px;
+    font-weight: 600;
+    stroke: none;
+  }
+
+  .end-label.d3 {
+    fill: var(--color-neutral-500);
+  }
+
+  .end-label.d5 {
+    fill: var(--color-neutral-700);
+  }
+
+  .end-label.d7 {
+    fill: var(--color-text);
+  }
+</style>

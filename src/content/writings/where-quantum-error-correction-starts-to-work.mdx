@@ -1,0 +1,141 @@
+---
+issue: 4
+title: Where quantum error correction starts to work
+standfirst: 'An analysis of the threshold for quantum error correction, the point where the physical error rate makes a logical qubit impossible to recover no matter how many qubits are added.'
+publishedAt: 2026-09-01
+tag: Research
+art:
+  src: ../../assets/art/004-misaka.jpg
+  alt: Mount Fuji rises over a still lake at Misaka, while its inverted reflection, capped with snow, floats in the water below the shoreline.
+  artist: Katsushika Hokusai
+  title: Reflection in Lake at Misaka in Kai Province, from Thirty-six Views of Mount Fuji
+  date: ca. 1830–32
+  holder: The Metropolitan Museum of Art
+  href: https://www.metmuseum.org/art/collection/search/36495
+---
+
+import Figure from '~/components/figures/Figure.astro';
+import Patch from '~/components/figures/Patch.astro';
+import PatchPair from '~/components/figures/PatchPair.astro';
+import SyndromeRounds from '~/components/figures/SyndromeRounds.astro';
+import ThresholdPlot from '~/components/figures/ThresholdPlot.astro';
+
+In December 2024, Google [announced](https://blog.google/technology/research/google-willow-quantum-chip/) that its Willow chip had run error correction "below threshold", and the phrase made headlines. It describes a break-even point, an error rate that decides whether a quantum computer can grow at all. Above it, adding qubits makes a machine worse. Below it, adding qubits makes it better, and the gain compounds as the machine grows.
+
+This post explains that break-even point by reproducing it. We simulated the surface code, the error-correcting scheme most hardware roadmaps rely on, and watched where correction starts to win. In 1.5 million simulated runs, the break-even landed near 0.7%. The full setup is public, and the exact commands are in the experiment section.
+
+## The bet of error correction
+
+A quantum computer's basic components are unreliable. On today's best chips, roughly [one operation in every few hundred goes wrong](/writings/quantum-hardware-paradigms/), and a useful algorithm needs [billions of operations](https://arxiv.org/abs/2505.15917) to go right. Nobody knows how to build a physical qubit anywhere near that good. The field's answer is a bet: spread one qubit's worth of information across many unreliable ones, watch for faults, and undo them faster than they pile up. The spread-out, protected qubit is called a logical qubit, and it is the thing algorithms actually run on.
+
+The surface code is the most popular recipe for placing that bet. It arranges qubits on a grid: data qubits hold the information, and check qubits sit between them, repeatedly asking a small question about their nearest neighbors, roughly "do these four still agree?". A check never reads the data itself, because measuring a qubit destroys the quantum state it holds. It only reveals whether neighbors are consistent with each other, and that indirection is what makes correction possible at all. One patch of this grid is one logical qubit.
+
+<Figure
+  n={1}
+  caption="A distance-3 surface-code patch. Circles hold the information; each shaded tile and lobe is one check, repeatedly testing whether its corner qubits still agree. Highlighted: one check and the four qubits it watches."
+>
+  <Patch variant="anatomy" />
+</Figure>
+
+Now watch what happens when something fails. A fault flips one data qubit, and the checks sitting next to it notice the disagreement on their next pass. The fault is located and undone, and the logical qubit is unharmed. There is exactly one way to damage the logical qubit without any check noticing: a line of faults crossing the entire patch, side to side. Along the line's interior every check still sees agreement, because both of its watched neighbors flipped together. Faults forming that full line change the logical qubit silently.
+
+<PatchPair
+  n={2}
+  caption="One fault trips the checks beside it. A line of faults spanning the patch trips none: along its interior, watched neighbors flipped together."
+  left="detect"
+  leftLabel="detected and undone"
+  right="cross"
+  rightLabel="crosses the patch: silent"
+/>
+
+The length of that shortest fatal line is called the distance, and it is the size of the patch. We simulated distances 3, 5 and 7, which use 17, 49 and 97 qubits. At distance 3, three faults landing in a row can slip through; at distance 7 it takes seven, and seven simultaneous faults in exactly the wrong places is a far rarer accident than three. So far, bigger looks strictly better.
+
+Here is the catch. Every qubit added to the patch is itself noisy. Every check is a real circuit of several operations, and each of those operations fails at the same physical rate as everything else. A bigger patch therefore runs more faulty machinery in every round of checking: it makes fatal lines longer and rarer, and at the same time it creates more chances per round for new faults to appear. Two effects race each other. Which one wins is the whole bet, and it is the question the experiment measures.
+
+## Finding errors without looking
+
+Each check reports a single bit every round: my neighbors agree, or they disagree. A fired check means a fault happened somewhere next to it. It does not say which neighbor flipped, and it does not say when. The report is a clue about a small neighborhood, and nothing more.
+
+The checks are also imperfect witnesses. A check runs on the same faulty hardware as everything else, so once in a while it fires with no fault anywhere near it, or stays quiet when it should have fired. On a distance-7 patch, one round of checking produces 48 reports, and every one of them might be wrong. The way out is time: a real fault keeps its two checks firing round after round, while a lie is a blip in a single round, so whatever interprets the reports must read several rounds together before concluding anything.
+
+<SyndromeRounds
+  n={3}
+  caption="Five rounds of reports. A fault at round 2 keeps its neighboring checks firing every round after; a check whose own measurement fails produces a single blip."
+/>
+
+Turning those reports into a diagnosis is a job for ordinary classical software. The program that does it is called the decoder. It runs beside the quantum computer, on normal hardware, and reads the reports as they arrive. The pattern of fired checks in a round is called the syndrome.
+
+The decoder searches for the set of faults that would explain the syndrome. In the surface code there is a helpful regularity: a fault sits between two checks, so it fires both of them. Fired checks therefore come in pairs, and decoding becomes a pairing puzzle. Many pairings could explain the same syndrome. The decoder picks the one that needs the fewest faults, the way you would explain two nearby footprints with one animal rather than two.
+
+<PatchPair
+  n={4}
+  caption="Two checks fire, and both stories explain the reports. The decoder picks the one needing the fewest faults: one, not three."
+  left="pairing-one"
+  leftLabel="one fault: chosen"
+  right="pairing-three"
+  rightLabel="three faults: rejected"
+/>
+
+Walk one fault through the whole system. A data qubit flips. On the next round, the two checks beside it fire. The decoder pairs them and concludes that the qubit between them flipped. Found.
+
+The natural next step would be to send a command to the chip and flip that qubit back. The machine skips it. Flipping the qubit back is one more operation on faulty hardware, and there is a safer way: write the conclusion down. From that moment, every measurement that involves the flipped qubit is read with the flip already accounted for. The record does the correcting, and the record is perfect, because it lives on a classical computer.
+
+The decoder can also guess wrong. When faults land in an unlucky pattern, the explanation with the fewest faults is not what happened, and the written-down correction combines with the real faults into the patch-crossing line from the last section. A logical error needs both parts: bad luck in the faults, and a wrong guess from the decoder. How often the two meet depends on how many faults appear each round, and that is the dial the experiment turns.
+
+<PatchPair
+  n={5}
+  caption="The same two checks fire as in Fig. 4, but this time two faults whose lines end at the edges caused them. The cheapest explanation is wrong, and the recorded correction completes a crossing line."
+  left="wrong-true"
+  leftLabel="what happened"
+  right="wrong-paired"
+  rightLabel="what the decoder concluded"
+/>
+
+## The experiment
+
+The simplest thing a logical qubit can do is remember. Hold a state, run rounds of checking, read out at the end, and see whether the state survived. That is the standard first test of an error-correcting code, and it is what we simulated.
+
+Everything runs on the field's standard open tools. [Stim](https://github.com/quantumlib/Stim) builds and simulates the faulty circuits. [sinter](https://pypi.org/project/sinter/) runs thousands of them in parallel and collects the statistics. [PyMatching](https://github.com/oscarhiggott/PyMatching) is the pairing decoder from the last section. We also decoded every run a second time with [Fusion Blossom](https://github.com/yale-paragon/fusion-blossom), an independent implementation of the same pairing algorithm: the two agree at every point, which tells us the results measure the code and the decoder rather than a bug in the setup. Exact versions are pinned in the repository.
+
+We simulated patches of distance 3, 5 and 7. A distance-d patch runs d rounds of checking before the readout, so a bigger patch is protected by more qubits and watched for longer. One honesty note: the full surface code watches two kinds of quantum error with two interleaved families of checks; a memory test measures one of them, which is the standard way thresholds are reported.
+
+The noise works like this: every operation can fail, and a single dial p sets how often. A gate misfires with probability p. A measurement reports the wrong bit with probability p. A reset leaves the wrong state with probability p. Qubits waiting their turn decay with probability p. There are no safe steps, and the checking machinery fails exactly as often as the data it watches, as the bet requires. Researchers call this a [uniform circuit-level noise model](https://arxiv.org/abs/2103.02202).
+
+At the end of each run the decoder gives its final answer, and the simulator knows the truth. The fraction of runs where the decoder is wrong is called the logical error rate: the failure rate of the protected qubit, the number this whole construction exists to shrink.
+
+We swept p from 0.004 to 0.014, meaning from four failures per thousand operations to fourteen, for each of the three distances. Each point collected runs until it saw 1,000 failures or reached one million runs, 1.52 million runs in total, in August 2026.
+
+The [repository](https://github.com/Superposition-Lab/experiments/tree/main/surface-code-threshold) holds the full setup, and rerunning it is three commands from the experiment's folder. The full sweep finishes in a few minutes.
+
+```
+just setup
+just run
+just plot
+```
+
+## The crossing
+
+The whole experiment fits in one plot. Along the bottom runs the dial p, the failure rate of every physical operation. Up the side runs the logical error rate, the failure rate of the protected qubit. Three curves, one per patch size. Every claim in this post is a statement about the shape of these three lines.
+
+<ThresholdPlot
+  n={6}
+  caption="Three patch sizes under the same noise, 1.52 million runs. Left of the band, bigger patches sit lower. Right of it, the order flips. Every point sits in the repository's CSV."
+/>
+
+Read the left side first. At p = 0.004, the distance-3 patch failed 1.15% of the time, distance 5 failed 0.73%, and distance 7 failed 0.45%. Same noise, same decoder, and every step up in patch size made the logical qubit more reliable. The bet from the first section pays off here: protection is growing faster than the added noise.
+
+Now read the right side. Past p = 0.008 the curves have crossed, and the order is upside down: the biggest patch is the least reliable. The same construction that helped on the left hurts on the right. Nothing about the machine changed except how often its parts fail.
+
+The point where the curves cross is called the threshold. In our simulation it sits near p = 0.007, seven failures per thousand operations. It is the answer to the first section's question: below it, growth wins the race; above it, noise does.
+
+One warning before the number travels anywhere: 0.7% is the threshold of this noise model, this decoder, and this checking schedule, together. Change an ingredient and the crossing moves. Make any operation more reliable than the single dial assumes and the crossing rises; hand the same runs to a decoder that guesses better and it rises too; make the noise crueler and it falls. A threshold quoted without its conditions is half a number, the same discipline [№ 002](/writings/quantum-hardware-paradigms/) applied to every hardware claim.
+
+The plot holds one more lesson, in how far apart the curves sit. At p = 0.004, each step up in distance divided the failure rate by roughly 1.6. That ratio is called the suppression factor: what one ring of qubits buys, the interest rate of error correction. It is not a constant. Watch the curves approach the band: at p = 0.006 the three of them nearly touch, and the factor has fallen toward 1. Run hardware barely under its threshold and enlargements buy almost nothing; run it far under and each one pays off multiplicatively. Google's below-threshold experiment measured a factor of 2.14 on its hardware, with a distance-7 memory failing 0.143% per round ([paper](https://arxiv.org/abs/2408.13687)). Crossing the threshold means a quantum computer can grow. How far below it runs decides whether growing is affordable, and that is why hardware roadmaps chase error rates before qubit counts.
+
+## What we found
+
+A simulated surface-code qubit, checked by the standard pairing decoder, crosses break-even near seven failures per thousand operations. Below that line, growth paid off every time: at four failures per thousand, enlarging the patch from distance 3 to distance 7 cut the logical failure rate from 1.15% to 0.45%, a factor of roughly 1.6 per step. Above the line, the same enlargement made the qubit worse. And the line itself belongs to the assumptions: this noise model, this decoder, this schedule. Change an ingredient and the crossing moves.
+
+That last fact is the next experiment. Real machines are not uniformly noisy: measurements fail more often than gates, one error type can dominate the other, and some platforms turn faults into flagged, known-location losses. We plan to bend our assumptions one at a time toward each of those realities and watch where the crossing goes. If the threshold is a property of the stack, it should move in ways the stack predicts.
+
+Everything here reruns from three commands in the [public repository](https://github.com/Superposition-Lab/experiments/tree/main/surface-code-threshold). If you build hardware or decoders, one question: which assumption in our noise model is most wrong for your machine? Tell us at [m@splabs.sh](mailto:m@splabs.sh) and we will put it in the next sweep.

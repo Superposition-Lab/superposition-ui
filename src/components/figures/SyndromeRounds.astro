@@ -1,0 +1,135 @@
+---
+/**
+ * Five rounds of check reports as a timeline: one lane for a check sitting
+ * beside a real fault (fires at the fault and keeps firing), one for a check
+ * whose own measurement failed (a single blip). The diagram carries the
+ * time argument of the decoding section: persistence separates faults from
+ * lies.
+ */
+import Figure from './Figure.astro';
+
+interface Props {
+  n: number;
+  caption: string;
+  top?: string | undefined;
+}
+
+const { n, caption, top } = Astro.props;
+
+const rounds = [1, 2, 3, 4, 5];
+const cellX = (i: number) => 210 + i * 74;
+const lanes = [
+  {
+    y: 66,
+    label: ['a check beside', 'a real fault'],
+    states: ['quiet', 'fired', 'fired', 'fired', 'fired'],
+    note: 'keeps firing',
+    noteFlagged: true,
+  },
+  {
+    y: 138,
+    label: ['a check whose', 'measurement failed'],
+    states: ['quiet', 'quiet', 'blip', 'quiet', 'quiet'],
+    note: 'one blip',
+    noteFlagged: false,
+  },
+];
+---
+
+<Figure {n} {caption} {top}>
+  <svg viewBox="0 0 640 178" role="img" aria-label={caption}>
+    <text class="axis" x={cellX(0)} y="22" text-anchor="middle">round 1</text>
+    {
+      rounds.slice(1).map((r, i) => (
+        <text class="axis" x={cellX(i + 1)} y="22" text-anchor="middle">
+          {r}
+        </text>
+      ))
+    }
+
+    <line class="event" x1={cellX(1)} y1="34" x2={cellX(1)} y2="48"></line>
+    <text class="event-label" x={cellX(1) + 8} y="44">fault happens</text>
+
+    {
+      lanes.map((lane) => (
+        <>
+          {lane.label.map((line, li) => (
+            <text class="lane-label" x="150" y={lane.y - 6 + li * 17} text-anchor="end">
+              {line}
+            </text>
+          ))}
+          {lane.states.map((s, i) => (
+            <rect
+              class:list={['cell', s]}
+              x={cellX(i) - 15}
+              y={lane.y - 15}
+              width="30"
+              height="30"
+              rx="3"
+            />
+          ))}
+          <text
+            class:list={['note', { flagged: lane.noteFlagged }]}
+            x={cellX(4) + 32}
+            y={lane.y + 5}
+          >
+            {lane.note}
+          </text>
+        </>
+      ))
+    }
+  </svg>
+</Figure>
+
+<style>
+  svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .axis,
+  .lane-label {
+    font-size: 13px;
+    fill: var(--sp-on-paper-tertiary);
+  }
+
+  .event {
+    stroke: var(--color-accent-2);
+    stroke-width: 1.5;
+  }
+
+  .event-label {
+    font-size: 12.5px;
+    font-style: italic;
+    fill: var(--color-accent-2-800);
+  }
+
+  .cell {
+    fill: var(--color-bg);
+    stroke: var(--color-text);
+    stroke-width: 1;
+  }
+
+  .cell.fired {
+    fill: var(--color-accent-2-100);
+    stroke: var(--color-accent-2);
+    stroke-width: 1.5;
+  }
+
+  .cell.blip {
+    fill: none;
+    stroke: var(--color-accent-2);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+
+  .note {
+    font-size: 13.5px;
+    font-style: italic;
+    fill: var(--sp-on-paper-tertiary);
+  }
+
+  .note.flagged {
+    fill: var(--color-accent-2-800);
+  }
+</style>

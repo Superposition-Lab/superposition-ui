@@ -1,0 +1,37 @@
+---
+/**
+ * Two Patch panels side by side under one Figure shell, each with its own
+ * italic label. For before/after moments: the fault detected next to the line
+ * that crosses, or what happened next to what the decoder concluded.
+ */
+import Figure from './Figure.astro';
+import Patch, { type PatchVariant } from './Patch.astro';
+
+interface Props {
+  n: number;
+  caption: string;
+  left: PatchVariant;
+  leftLabel: string;
+  right: PatchVariant;
+  rightLabel: string;
+  top?: string | undefined;
+}
+
+const { n, caption, left, leftLabel, right, rightLabel, top } = Astro.props;
+---
+
+<Figure {n} {caption} {top}>
+  <div class="pair">
+    <Patch variant={left} label={leftLabel} />
+    <Patch variant={right} label={rightLabel} />
+  </div>
+</Figure>
+
+<style>
+  .pair {
+    display: flex;
+    gap: 36px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+</style>
