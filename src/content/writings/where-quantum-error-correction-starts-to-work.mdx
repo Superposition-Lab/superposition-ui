@@ -95,7 +95,9 @@ The decoder can also guess wrong. When faults land in an unlucky pattern, the ex
 
 The simplest thing a logical qubit can do is remember. Hold a state, run rounds of checking, read out at the end, and see whether the state survived. That is the standard first test of an error-correcting code, and it is what we simulated.
 
-Everything runs on the field's standard open tools. [Stim](https://github.com/quantumlib/Stim) builds and simulates the faulty circuits. [sinter](https://pypi.org/project/sinter/) runs thousands of them in parallel and collects the statistics. [PyMatching](https://github.com/oscarhiggott/PyMatching) is the pairing decoder from the last section. We also decoded every run a second time with [Fusion Blossom](https://github.com/yale-paragon/fusion-blossom), an independent implementation of the same pairing algorithm: the two agree at every point, which tells us the results measure the code and the decoder rather than a bug in the setup. Exact versions are pinned in the repository.
+Everything runs on the field's standard open tools. [Stim](https://github.com/quantumlib/Stim) builds and simulates the faulty circuits. [sinter](https://pypi.org/project/sinter/) runs thousands of them in parallel and collects the statistics. [PyMatching](https://github.com/oscarhiggott/PyMatching) is the pairing decoder from the last section. Exact versions are pinned in the repository.
+
+We also ran the same circuit and noise settings with [Fusion Blossom](https://github.com/yale-paragon/fusion-blossom), an independent implementation of the same pairing algorithm. Each decoder received separately sampled shots. The two produce similar failure rates across the sweep, giving us a consistency check on the results.
 
 We simulated patches of distance 3, 5 and 7. A distance-d patch runs d rounds of checking before the readout, so a bigger patch is protected by more qubits and watched for longer. One honesty note: the full surface code watches two kinds of quantum error with two interleaved families of checks; a memory test measures one of them, which is the standard way thresholds are reported.
 
