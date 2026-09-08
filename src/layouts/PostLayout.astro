@@ -1,31 +1,19 @@
 ---
-/**
- * A journal article.
- *
- * Owns the article chrome (header, prose typography, footer). The MDX body is
- * rendered into the `.prose` column, so a post file only ever contains prose
- * and figure components — never layout.
- */
+/** Shared by every writing; MDX supplies the complete prose and figures. */
 import PostArt from '~/components/PostArt.astro';
 import SiteFooter from '~/components/SiteFooter.astro';
 import SiteNav from '~/components/SiteNav.astro';
 import Wrap from '~/components/Wrap.astro';
+import { SITE } from '~/config';
 import BaseLayout from '~/layouts/BaseLayout.astro';
-import { formatIssue, type Writing } from '~/lib/writings';
-
+import { formatIssue, formatMonthYear, type Writing } from '~/lib/writings';
 interface Props {
   entry: Writing;
   ogImage: string;
 }
-
 const { entry, ogImage } = Astro.props;
 const { title, standfirst, tag, publishedAt, issue, description, draft, art } = entry.data;
-
-const publishedLabel = new Intl.DateTimeFormat('en-US', {
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'UTC',
-}).format(publishedAt);
+const publishedLabel = formatMonthYear(publishedAt);
 ---
 
 <BaseLayout
@@ -36,148 +24,159 @@ const publishedLabel = new Intl.DateTimeFormat('en-US', {
   ogImage={ogImage}
   noindex={draft}
 >
-  <div class="band">
-    <SiteNav />
-  </div>
-
-  <Wrap class="sheet">
-    <article id="main">
-      <header class="post-header">
+  <SiteNav />
+  <main id="main">
+    <article>
+      <Wrap as="header" class="post-header">
+        <a class="back-link" href="/#writings">← All writings</a>
         <div class="meta">
-          <span class="issue">{formatIssue(issue)}</span>
-          <span class="tag tag-accent-2">{tag}</span>
+          <span>{formatIssue(issue)}</span><span aria-hidden="true">/</span><span>{tag}</span><span
+            aria-hidden="true">/</span
+          >
           <time datetime={publishedAt.toISOString()}>{publishedLabel}</time>
         </div>
-
         <h1>{title}</h1>
         <p class="standfirst">{standfirst}</p>
-
-        {art && <PostArt art={art} />}
-      </header>
-
-      <div class="prose">
-        <slot />
-      </div>
+      </Wrap>
+      {art && <PostArt art={art} />}
+      <Wrap class="reading">
+        <aside aria-label="Article information">
+          <p class="issue">{tag} / {formatIssue(issue)}</p>
+          <p>{SITE.name}</p>
+          <p>Published {publishedLabel}</p>
+          <a href="/#writings">Browse all writings <span aria-hidden="true">↗</span></a>
+        </aside>
+        <div class="prose"><slot /></div>
+      </Wrap>
     </article>
-
-    <SiteFooter spacious>
-      <a href="/">Home</a>
-    </SiteFooter>
-  </Wrap>
+  </main>
+  <div class="footer-rule"><SiteFooter /></div>
 </BaseLayout>
-
 <style>
-  .band {
-    background: var(--sp-navy);
-    color: var(--sp-on-dark);
+  .post-header {
+    border-top: 1px solid var(--color-divider);
+    padding-block: 64px 56px;
   }
-
-  .sheet {
-    padding-block: clamp(56px, 8vh, 96px) 120px;
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 44px;
+    font-size: 16px;
+    text-decoration: none;
   }
-
-  /* ── Article header ─────────────────────────────────────────────────── */
-
+  .back-link:hover {
+    text-decoration: underline;
+  }
   .meta {
     display: flex;
+    flex-wrap: wrap;
     gap: 14px;
     align-items: baseline;
-    flex-wrap: wrap;
-  }
-
-  .issue {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 17px;
-    color: var(--color-accent-700);
-  }
-
-  .meta time {
-    font-size: 13px;
-    letter-spacing: 0.08em;
+    font: 12px/1.5 var(--font-mono);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--sp-on-paper-tertiary);
+    color: var(--color-accent);
   }
-
-  .post-header h1 {
-    font-size: clamp(36px, 4.6vw, 56px);
-    line-height: 1.12;
-    letter-spacing: -0.02em;
-    /* Optical alignment, as in the hero. */
-    margin: 28px 0 0 -0.035em;
-    max-width: var(--sp-measure);
+  h1 {
+    font-size: clamp(48px, 5.55vw, 80px);
+    line-height: 1.075;
+    letter-spacing: -0.03em;
+    max-width: 1100px;
+    margin: 24px 0;
   }
-
   .standfirst {
-    font-family: var(--font-heading);
-    font-style: italic;
-    font-weight: 400;
-    font-size: 22px;
-    line-height: 34px;
+    font-size: 24px;
+    line-height: 1.45;
+    max-width: 940px;
     color: var(--sp-on-paper-secondary);
-    max-width: var(--sp-measure);
-    margin: 28px 0 0;
+    margin: 0;
   }
-
-  /* ── Body ───────────────────────────────────────────────────────────────
-     These target markdown output, so they are element selectors rather than
-     classes. `:global` because the MDX body is not scoped to this component. */
-
-  /* Figures are excluded: each one sets its own measure, and some are narrower
-     than the text column. Scoping the rule here rather than overriding it in
-     Figure.astro avoids a specificity fight — Astro scoped selectors add no
-     specificity of their own, so the override would lose. */
-  .prose :global(> :not(figure)) {
-    max-width: var(--sp-measure);
+  .reading {
+    display: grid;
+    grid-template-columns: 240px minmax(0, var(--sp-measure));
+    gap: 80px;
+    padding-block: 72px 80px;
   }
-
-  .prose :global(p) {
-    font-size: 17px;
-    line-height: 28px;
-    margin: 24px 0 0;
-    /* Justified with hyphenation — the broadsheet register. Without `hyphens`
-       justification would open rivers of white space at this measure. */
-    text-align: justify;
-    hyphens: auto;
+  aside {
+    align-self: start;
+    border-top: 1px solid var(--color-divider);
+    padding-top: 20px;
+    font-size: 16px;
   }
-
+  aside p {
+    margin: 0;
+  }
+  aside p + p {
+    margin-top: 10px;
+    color: var(--sp-on-paper-secondary);
+  }
+  aside .issue {
+    font: 12px/1.5 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 20px;
+  }
+  aside a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    gap: 12px;
+    margin-top: 20px;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  aside a:hover {
+    text-decoration: underline;
+  }
+  .prose {
+    min-width: 0;
+    font-size: 20px;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+  .prose :global(> p),
+  .prose :global(li p),
+  .prose :global(blockquote p) {
+    margin: 26px 0 0;
+  }
+  .prose :global(> p:first-child) {
+    margin-top: 0;
+  }
   .prose :global(h2) {
-    font-size: 30px;
-    line-height: 36px;
-    letter-spacing: -0.015em;
-    margin: 84px 0 0;
+    font-size: 36px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 60px 0 24px;
+    scroll-margin-top: 32px;
   }
-
-  .prose :global(h2 + p) {
-    margin-top: 26px;
-  }
-
   .prose :global(h3) {
-    font-size: 22px;
-    line-height: 30px;
-    margin: 48px 0 0;
+    font-size: 26px;
+    line-height: 1.25;
+    margin: 40px 0 20px;
+    scroll-margin-top: 32px;
   }
-
   .prose :global(ul),
   .prose :global(ol) {
-    font-size: 17px;
-    line-height: 28px;
-    margin: 24px 0 0;
+    margin: 26px 0 0;
     padding-left: 1.4em;
   }
-
   .prose :global(li + li) {
     margin-top: 8px;
   }
-
+  .prose :global(a) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   .prose :global(:not(pre) > code) {
     font-family: var(--font-mono);
-    font-size: 14.5px;
+    font-size: 0.8em;
     background: var(--color-neutral-100);
     padding: 1px 5px;
     border-radius: var(--radius-md);
+    overflow-wrap: anywhere;
   }
-
   .prose :global(pre) {
     font-size: 13.5px;
     line-height: 22px;
@@ -185,46 +184,97 @@ const publishedLabel = new Intl.DateTimeFormat('en-US', {
     padding: 18px 22px;
     overflow-x: auto;
     margin: 28px 0 0;
+    border: 1px solid var(--color-divider);
     border-radius: var(--radius-md);
   }
-
   .prose :global(pre code) {
     font-size: inherit;
     background: none;
     padding: 0;
   }
-
+  /* Wide research tables scroll inside the reading column, including on phones. */
   .prose :global(table) {
-    width: 100%;
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
     border-collapse: collapse;
     font-size: 15px;
+    line-height: 1.5;
     margin: 32px 0 0;
   }
-
   .prose :global(th) {
     text-align: left;
+    font-family: var(--font-mono);
     font-size: 11px;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-text) 60%, transparent);
+    color: var(--sp-on-paper-secondary);
     padding: var(--space-2);
     border-bottom: 1px solid var(--color-divider);
   }
-
   .prose :global(td) {
+    min-width: 120px;
     padding: var(--space-2);
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+    border-bottom: 1px solid var(--color-divider);
   }
-
   .prose :global(tbody tr:hover) {
-    background: color-mix(in srgb, var(--color-text) 4%, transparent);
+    background: var(--color-surface);
   }
-
   .prose :global(blockquote) {
     margin: 32px 0 0;
     padding-left: 22px;
-    border-left: 2px solid var(--color-divider);
+    border-left: 2px solid var(--color-accent);
     font-style: italic;
     color: var(--sp-on-paper-secondary);
+  }
+  .footer-rule {
+    border-top: 1px solid var(--color-divider);
+  }
+  @media (max-width: 1100px) {
+    .reading {
+      grid-template-columns: 180px minmax(0, var(--sp-measure));
+      gap: 40px;
+    }
+  }
+  @media (max-width: 900px) {
+    .reading {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 36px;
+    }
+    aside {
+      display: none;
+    }
+  }
+  @media (max-width: 760px) {
+    .post-header {
+      padding-block: 30px 36px;
+    }
+    .back-link {
+      margin-bottom: 28px;
+    }
+    .meta {
+      font-size: 10px;
+      gap: 8px;
+    }
+    h1 {
+      font-size: 46px;
+    }
+    .standfirst {
+      font-size: 21px;
+    }
+    .reading {
+      padding-block: 40px 52px;
+    }
+    .prose {
+      font-size: 19px;
+    }
+    .prose :global(h2) {
+      font-size: 32px;
+    }
+  }
+  @media (max-width: 380px) {
+    h1 {
+      font-size: 42px;
+    }
   }
 </style>

@@ -26,6 +26,16 @@ const { bodyClass, ...seo } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
+    <!-- Apply an explicit preference before first paint; CSS handles the system default. -->
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem('superposition-theme');
+        if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme;
+      } catch {
+        // Storage can be unavailable; the system preference still works.
+      }
+    </script>
+
     <!-- Self-hosted and preloaded: no third-party font request, no layout shift. -->
     <Font cssVariable="--font-source-serif" preload />
 

@@ -1,87 +1,59 @@
 # Design system
 
-The look comes from **Broadsheet**, a print-register design system: paper and ink, two process accents, one serif doing every job. The original design reference is preserved verbatim in [`design-handoff/`](design-handoff/) — those `.dc.html` files are the visual spec this codebase implements.
+The current site uses the Cobalt direction: paper, deep ultramarine, grainy architectural artwork, Source Serif 4, and IBM Plex Mono metadata. The homepage, every writing, 404, and development styleguide share the same navigation, footer, and tokens. The original Broadsheet references in `design-handoff/` are historical.
 
-Run `npm run dev` and open <http://localhost:4321/styleguide> to see everything below rendered.
+The original logo is retained: two 14 px cyan and magenta dots overlapping by 6 px. Its dedicated `--color-brand-cyan` and `--color-brand-magenta` tokens preserve the original inks independently of the new interface palette. `LogoMark` still uses multiply on paper and screen on dark. The favicon is unchanged.
 
----
+## Tokens and typography
 
-## Tokens
+The color values below describe light mode. `src/styles/tokens.css` is the source of truth. Components use scoped styles and token references; Tailwind maps these through `src/styles/theme.css`. Build-time social cards mirror the same colors in `src/lib/og.ts`, because Satori cannot resolve CSS variables.
 
-[`src/styles/tokens.css`](../src/styles/tokens.css) is the source of truth. Nothing else in the codebase writes a hex value.
+| Role                    | Token / value                          |
+| ----------------------- | -------------------------------------- |
+| Paper                   | `--color-bg`, `#f3f2f2`                |
+| Ink                     | `--color-text`, `#141333`              |
+| Interactive cobalt      | `--color-accent`, `#1510b8`            |
+| Secondary figure states | `--color-accent-2`, violet             |
+| Dark sections           | `--sp-navy`, `#08062d`                 |
+| Secondary text          | `--sp-on-paper-secondary`, `#57566a`   |
+| Hairlines               | `--color-divider`, `#d4d3de`           |
+| Content width           | `--sp-wrap`, 1440 px including gutters |
+| Reading width           | `--sp-measure`, 760 px                 |
 
-Tailwind reads the tokens through `@theme inline` in [`src/styles/theme.css`](../src/styles/theme.css). `inline` matters: it means Tailwind substitutes a `var()` reference into the utility instead of re-declaring the value, so the token is defined exactly once. Tailwind's stock palette is cleared with `--color-*: initial`, so only design-system colors exist as utilities.
+Source Serif 4 remains self-hosted through Astro's font pipeline. Display headings use regular weight; the original wordmark and prose emphasis use semibold. IBM Plex Mono is bundled locally, with its license, for navigation, metadata, captions, and code. No font request goes to a third party at runtime.
 
-### Ground
+## Light and dark mode
 
-| Token             | Value                   | Role                                          |
-| ----------------- | ----------------------- | --------------------------------------------- |
-| `--color-bg`      | `#f3f2f2`               | paper — the page                              |
-| `--color-surface` | `#eae9e9`               | a raised surface on paper                     |
-| `--color-text`    | `#201e1d`               | ink — body copy                               |
-| `--color-divider` | 16% ink                 | hairlines                                     |
-| `--sp-navy`       | `oklch(0.21 0.055 235)` | the hero band. Site-specific, not Broadsheet. |
+Color tokens use `light-dark()` with the page's `color-scheme`, so the system preference works even without JavaScript. The header button lets readers select a mode. An explicit choice is saved in `localStorage` under `superposition-theme`, applied in the document head before first paint, and synchronized between tabs. If storage is unavailable, switching still works on the current page. The original logo inks stay fixed; only the blend mode adapts to the page background.
 
-### Ramps
+Dark mode uses a deep violet ground, warm light text, and lighter cobalt/violet accents. Diagram colors, rules, table states, and captions share these tokens. Shiki emits light and dark syntax colors for code blocks. Hero artwork and the dark image sections keep their original treatment.
 
-Three ramps — `neutral`, `accent` (cyan), `accent-2` (magenta) — each 100 to 900. They were generated in OKLCH on one shared lightness scale, so step 700 of any ramp has the same visual weight as step 700 of any other. That is what makes them substitutable.
+## Page structure
 
-- **Cyan is the interactive color.** Links and small text on paper take `--color-accent-700`; `--color-accent` is the hover state and the fill for primary buttons.
-- **Magenta is a spot color.** Tags, the one figure arc, the "never revealed" label. Using it for anything routine spends its impact.
-- **`--color-process-yellow`** is a print-treatment ink, not an interface accent. On this site it appears once, on the hero's outer orbit ring. Body copy and chrome never take it.
+`Hero` pairs a dark text panel with a full-height image. `WritingsList` features the latest entry and lists the remainder as ruled rows, all linking to local article routes. `LabSection` introduces the lab. `SiteNav` and `SiteFooter` are shared across pages.
 
-### Site tokens
+`PostLayout` renders the complete MDX body, with a wide article header and artwork followed by a 760 px reading column. Its secondary metadata column disappears at 900 px. Layouts stack at 760 px; article artwork retains its full composition at every width. Wide tables and code blocks scroll within their own containers.
 
-Namespaced `--sp-` and defined below a divider comment in `tokens.css`. These are Superposition's, not Broadsheet's, so a future Broadsheet update can drop in above them untouched.
+## Artwork
 
-| Token                       | Role                                          |
-| --------------------------- | --------------------------------------------- |
-| `--sp-on-dark`              | text on the navy band                         |
-| `--sp-on-dark-secondary`    | secondary text on navy                        |
-| `--sp-on-paper-secondary`   | standfirst, figure body copy                  |
-| `--sp-on-paper-tertiary`    | meta, captions, footer                        |
-| `--sp-on-paper-muted`       | struck-through / dropped states               |
-| `--sp-rule-muted`           | dashed borders on paper                       |
-| `--sp-wrap` / `--sp-gutter` | the 1200px content column and its padding     |
-| `--sp-measure`              | 840px — the reading measure for article prose |
+The hero and lab images are references supplied for this redesign. Four new editorial illustrations were generated with the built-in Imagegen tool, then adjusted to the references' stronger ultramarine palette. These are visual metaphors, not scientific diagrams. Full prompts and file paths are recorded in [cobalt-art-prompts.json](cobalt-art-prompts.json).
 
-### Type
+All project images live in `src/assets/art/`. Astro produces responsive WebP sizes at build time. The original public-domain prints remain in the repository as unused historical assets.
 
-Source Serif 4 sets **everything**: headings, body, and UI chrome. Weights 400 and 600, plus true italic 400. There is no second family.
+The optional `art` frontmatter requires `src`, `alt`, and `title`. `credit` and `href` are optional for sourced artwork. The original illustrations display only their titles; creation records remain in the asset prompt document.
 
-The font is self-hosted by Astro's font pipeline (see the `fonts` block in `astro.config.ts`), which subsets it, preloads it, and generates a metric-matched fallback so there is no layout shift while it loads. `--font-source-serif` is published by that pipeline; `--font-heading` and `--font-body` point at it.
-
-Monospace is a system stack (`--font-mono`), used only for code.
-
----
-
-## House details
-
-Two treatments carry the identity. Both are load-bearing — remove them and the site is just a serif on grey.
-
-**Misregistration.** Display headlines carry a two-color text-shadow, cyan down-right and magenta up-left, at roughly 0.02em. It reads as a press drifting out of register. Applied at display sizes only — at body size it turns to mud. See `.headline` in `Hero.astro`.
-
-**Optical alignment.** Large headings take `margin-left: -0.035em` so the first glyph's stem, not its sidebearing, lines up with the copy below.
-
-**The mark.** Two 14px dots, cyan and magenta, overlapping by 6px. The blend mode flips with the ground: `screen` on navy (lightens), `multiply` on paper (darkens). `LogoMark.astro` takes an `on` prop for this — passing the wrong one makes the mark disappear into its background.
-
----
-
-## Components
-
-Broadsheet's class-based components live in [`src/styles/components.css`](../src/styles/components.css). Only the ones this site uses are ported; the full set (cards, forms, dialogs, the CMYK print treatments) is in [`design-handoff/styles.css`](design-handoff/styles.css). Copy a block down when a page needs it.
-
-Ported: `.btn` (`.btn-primary`, `.btn-secondary`), `.tag` (`.tag-accent`, `.tag-accent-2`, `.tag-neutral`, `.tag-outline`), `.nav` / `.nav-brand`, `.table`, `.hr`.
-
-Everything else is an Astro component with scoped styles.
-
----
+```yaml
+art:
+  src: ../../assets/art/cobalt-004-threshold.jpg
+  alt: A colonnade leads toward a luminous doorway.
+  title: The threshold
+```
 
 ## Figures
 
 The article diagrams are HTML and CSS, not images — they stay sharp, respond to the tokens, and are searchable. Each takes props, so the next post reuses the component rather than copying markup.
 
-All four wrap [`Figure.astro`](../src/components/figures/Figure.astro), which owns the caption, the numbering and the measure.
+All diagrams wrap [`Figure.astro`](../src/components/figures/Figure.astro), which owns the caption, the numbering and the measure.
 
 ### `TrustChain`
 
@@ -105,11 +77,11 @@ A left-to-right chain of boxes joined by arrows. Wraps on narrow screens.
 />
 ```
 
-Tones: `private` (dashed rule over a halftone screen — the thing never revealed), `plain` (default), `result` (cyan on cyan tint — what the chain produces).
+Tones: `private` (dashed rule over a halftone screen — the thing never revealed), `plain` (default), `result` (cobalt on cobalt tint — what the chain produces).
 
 ### `PipelineLoop`
 
-Stacked numbered steps joined by vertical connectors, with an optional magenta feedback arc. Steps are numbered automatically from their array position. The arc is drawn with a half-border and a radius rather than SVG, so it inherits token colors; it hides below 720px, where it would overlap the steps.
+Stacked numbered steps joined by vertical connectors, with an optional violet feedback arc. Steps are numbered automatically from their array position. The arc is drawn with a half-border and a radius rather than SVG, so it inherits token colors; it hides below 720px, where it would overlap the steps.
 
 ```astro
 <PipelineLoop
@@ -124,35 +96,18 @@ Stacked numbered steps joined by vertical connectors, with an optional magenta f
 
 Labelled rows of chips. Reading down a column shows an item surviving or falling out.
 
-Chip states: `kept` (default), `dropped` (dashed and struck through), `highlight` (cyan — what remains).
+Chip states: `kept` (default), `dropped` (dashed and struck through), `highlight` (cobalt — what remains).
 
 ### `CellGrid`
 
 A tape diagram: label, a row of equal-width cells, an annotation.
 
-Cell states: `outline`, `filled`, `flagged` (solid magenta), `broken` (dashed magenta), `skipped` (dashed grey).
+Cell states: `outline`, `filled`, `flagged` (solid violet), `broken` (dashed violet), `skipped` (dashed grey).
 
 ---
 
-## The hero animation
+## Accessibility and validation
 
-Three layers, all CSS, all `aria-hidden`, all static under `prefers-reduced-motion`.
+Keep the skip link, visible keyboard focus, sufficient text contrast, and reduced-motion handling. On dark sections the focus ring uses the light foreground color. Diagram state labels, patterns, and line styles remain intact independently of the palette. The proof chain stacks on phones; dense SVG charts retain a 640 px minimum drawing width inside a labeled, keyboard-focusable scroll region so labels remain readable.
 
-1. **[`InterferenceRipples`](../src/components/hero/InterferenceRipples.astro)** — two full-bleed `repeating-radial-gradient` layers of 2px rings, cyan and magenta, breathing on 16s and 19s. Neither layer is the effect; the moiré where they cross is. The periods (44px / 52px) and durations are deliberately mismatched so the pattern never repeats cleanly.
-
-2. **[`OrbitSystem`](../src/components/hero/OrbitSystem.astro)** — a 620px atom: a pulsing core, three tilted orbit planes, a dotted outer ring, five twinkling stars. Its geometry is data in [`orbit-system.ts`](../src/components/hero/orbit-system.ts), so a plane can be retuned, added or removed in one place.
-
-   The trick worth understanding is **billboarding**. Each electron rides a plane tilted 60–75° away from the viewer. Left alone it would squash into an ellipse and read flat. So each dot sits inside a counter-rotating wrapper and then takes a static inverse tilt — `rotateZ(-planeZ) rotateX(-planeX)` — which makes it face the viewer at every point of the orbit. That is what makes a flat gradient read as a sphere travelling in depth. `billboardTransform()` computes it, so it cannot drift out of sync with a plane's angles.
-
-3. The headline's misregistration shadow, described above.
-
-To change the atom, edit `ORBIT_PLANES` in `orbit-system.ts` — not the markup.
-
----
-
-## Accessibility
-
-- Focus rings are 2px cyan with a 2px offset, on `:focus-visible` only. Never remove them.
-- A skip link sits first in the document, visible on focus.
-- Decorative motion is `aria-hidden` and stops under `prefers-reduced-motion`. `base.css` has a global backstop, but guard component animations too.
-- ESLint runs `eslint-plugin-jsx-a11y` over Astro templates, so most markup-level regressions fail `npm run lint`.
+Run `npm run verify` for formatting, lint, Astro/TypeScript checks, and the production build. Review full article layouts on desktop and mobile, including wide tables and diagrams. The development-only `/styleguide` route shows the shared components and figure states.

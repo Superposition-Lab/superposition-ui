@@ -8,6 +8,8 @@
  * Use it when adding a figure or retuning a token: this is the fastest way to
  * see every variant at once without hunting through an article.
  */
+import SiteNav from '~/components/SiteNav.astro';
+import SiteFooter from '~/components/SiteFooter.astro';
 import CellGrid from '~/components/figures/CellGrid.astro';
 import ChipRows from '~/components/figures/ChipRows.astro';
 import PipelineLoop from '~/components/figures/PipelineLoop.astro';
@@ -21,9 +23,13 @@ export const getStaticPaths = (() =>
 
 const RAMPS = [
   { name: 'neutral', steps: [100, 200, 300, 400, 500, 600, 700, 800, 900], prefix: 'neutral' },
-  { name: 'accent (cyan)', steps: [100, 200, 300, 400, 500, 600, 700, 800, 900], prefix: 'accent' },
   {
-    name: 'accent-2 (magenta)',
+    name: 'accent (cobalt)',
+    steps: [100, 200, 300, 400, 500, 600, 700, 800, 900],
+    prefix: 'accent',
+  },
+  {
+    name: 'accent-2 (violet)',
     steps: [100, 200, 300, 400, 500, 600, 700, 800, 900],
     prefix: 'accent-2',
   },
@@ -31,6 +37,7 @@ const RAMPS = [
 ---
 
 <BaseLayout title="Styleguide" description="Component gallery (development only)" noindex>
+  <SiteNav />
   <main id="main" class="guide">
     <h1>Styleguide</h1>
     <p class="lede">
@@ -147,6 +154,7 @@ const RAMPS = [
 
     <div class="tail"></div>
   </main>
+  <SiteFooter />
 </BaseLayout>
 
 <style>

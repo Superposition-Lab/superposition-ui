@@ -51,12 +51,12 @@ const width = size * 2 - overlap;
 
   .dot-cyan {
     left: 0;
-    background: var(--color-accent);
+    background: var(--color-brand-cyan);
   }
 
   .dot-magenta {
     right: 0;
-    background: var(--color-accent-2);
+    background: var(--color-brand-magenta);
   }
 
   .logo-mark[data-on='dark'] .dot {
@@ -64,6 +64,6 @@ const width = size * 2 - overlap;
   }
 
   .logo-mark[data-on='paper'] .dot {
-    mix-blend-mode: multiply;
+    mix-blend-mode: var(--sp-logo-blend);
   }
 </style>

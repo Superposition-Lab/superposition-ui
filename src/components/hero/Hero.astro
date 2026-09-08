@@ -1,99 +1,135 @@
 ---
-/**
- * The homepage hero: navy band, nav, headline, and the decorative animation.
- */
-import SiteNav from '~/components/SiteNav.astro';
-import Wrap from '~/components/Wrap.astro';
-
-import InterferenceRipples from './InterferenceRipples.astro';
-import OrbitSystem from './OrbitSystem.astro';
-
-interface Props {
-  /** Headline, one array entry per rendered line. */
-  headline: readonly string[];
-  subhead: string;
-  cta?: { label: string; href: string } | undefined;
-}
-
-const { headline, subhead, cta } = Astro.props;
+import { Image } from 'astro:assets';
+import temple from '~/assets/art/cobalt-temple-cloud.jpg';
+import { SITE } from '~/config';
 ---
 
-<header class="hero">
-  <InterferenceRipples />
-  <OrbitSystem />
-
-  <SiteNav brandIsLink={false} />
-
-  <Wrap class="hero-content">
-    <h1 class="headline">
-      {
-        headline.map((line, i) =>
-          i === 0 ? (
-            line
-          ) : (
-            <>
-              <br />
-              {line}
-            </>
-          ),
-        )
-      }
-    </h1>
-
-    <p class="subhead">{subhead}</p>
-
-    {
-      cta && (
-        <div class="actions">
-          <a class="btn btn-primary" href={cta.href}>
-            {cta.label}
-          </a>
-        </div>
-      )
-    }
-  </Wrap>
-</header>
-
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow">Research &amp; development / Est. 2026</p>
+    <h1 id="hero-title">Between<br />two states<br />of computing.</h1>
+    <p class="intro">{SITE.description}</p>
+    <a class="explore" href="#writings">Explore the writings <span aria-hidden="true">↗</span></a>
+  </div>
+  <Image
+    class="hero-art"
+    src={temple}
+    alt="A classical temple beside still water and an immense cloud, rendered in grainy ultramarine."
+    widths={[640, 960, 1440, 1920]}
+    sizes="(max-width: 760px) 100vw, 55vw"
+    loading="eager"
+    fetchpriority="high"
+  />
+</section>
 <style>
   .hero {
-    position: relative;
+    display: grid;
+    grid-template-columns: 45.14% 54.86%;
     background: var(--sp-navy);
     color: var(--sp-on-dark);
-    overflow: hidden;
   }
-
-  .hero-content {
-    position: relative; /* above the animation layers */
-    padding-block: clamp(80px, 12vh, 130px) clamp(80px, 11vh, 120px);
+  .hero-copy {
+    min-width: 0;
+    min-height: 720px;
+    padding: 64px var(--sp-gutter);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 36px;
   }
-
-  .headline {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: clamp(48px, 6.5vw, 84px);
-    line-height: 1.06;
-    letter-spacing: -0.025em;
-    /* Optical alignment: pull the first glyph left so its stem, not its
-       sidebearing, lines up with the copy below. */
-    margin: 0 0 0 -0.035em;
-    /* Misregistration — the cyan and magenta plates a breath out of true, the
-       way a press drifts. The house signature, applied at display sizes only. */
-    text-shadow:
-      0.022em 0.016em 0 rgba(0, 163, 209, 0.55),
-      -0.02em -0.014em 0 rgba(214, 0, 108, 0.4);
+  p,
+  h1 {
+    margin: 0;
   }
-
-  .subhead {
-    font-size: 19px;
-    line-height: 30px;
-    max-width: 42ch;
-    margin: 44px 0 0;
+  .eyebrow {
+    font: 12px/1.5 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--sp-on-dark-secondary);
   }
-
-  .actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 32px;
+  h1 {
+    font-size: clamp(56px, 5.55vw, 90px);
+    line-height: 1.025;
+    letter-spacing: -0.035em;
+    margin-left: -0.025em;
+  }
+  .intro {
+    max-width: 476px;
+    color: var(--sp-on-dark-secondary);
+  }
+  .hero :global(.hero-art) {
+    width: 100%;
+    height: 100%;
+    min-height: 720px;
+    object-fit: cover;
+  }
+  .explore {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    min-height: 54px;
+    padding: 14px 20px;
+    background: var(--sp-on-dark);
+    color: var(--color-cobalt);
+    font-size: 16px;
+    text-decoration: none;
+  }
+  .explore:hover {
+    background: var(--sp-on-dark-secondary);
+  }
+  .explore:focus-visible {
+    outline-color: var(--sp-on-dark);
+    outline-offset: 6px;
+  }
+  @media (max-width: 1100px) {
+    .hero-copy {
+      min-height: 650px;
+      padding-block: 48px;
+    }
+    .hero :global(.hero-art) {
+      min-height: 650px;
+    }
+    h1 {
+      font-size: clamp(46px, 5.7vw, 62px);
+    }
+    .intro {
+      font-size: 18px;
+    }
+  }
+  @media (max-width: 760px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero-copy {
+      min-height: 560px;
+      padding-block: 40px;
+      gap: 28px;
+    }
+    h1 {
+      font-size: 52px;
+      line-height: 1.02;
+    }
+    .eyebrow {
+      font-size: 10px;
+    }
+    .intro {
+      font-size: 19px;
+      max-width: 420px;
+    }
+    .hero :global(.hero-art) {
+      height: 350px;
+      min-height: 0;
+      object-position: 50% 62%;
+    }
+  }
+  @media (max-width: 380px) {
+    h1 {
+      font-size: clamp(42px, 13.33vw, 48px);
+    }
+    .hero-copy {
+      min-height: 550px;
+    }
   }
 </style>

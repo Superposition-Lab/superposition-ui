@@ -14,8 +14,8 @@ export interface Cell {
   /**
    * outline — 1px ink rule, nothing filled in
    * filled  — neutral fill; the pass acted on it
-   * flagged — solid magenta; the malformed instruction itself
-   * broken  — dashed magenta; where that instruction derailed the pass
+   * flagged — solid violet; the malformed instruction itself
+   * broken  — dashed violet; where that instruction derailed the pass
    * skipped — dashed grey; the pass fell out of step and did nothing
    */
   state?: 'outline' | 'filled' | 'flagged' | 'broken' | 'skipped' | undefined;
@@ -26,7 +26,7 @@ export interface CellRow {
   cells: Cell[];
   /** Italic note to the right of the row. */
   note?: string | undefined;
-  /** Set the note in magenta, for the row that carries the consequence. */
+  /** Set the note in violet, for the row that carries the consequence. */
   noteFlagged?: boolean | undefined;
 }
 

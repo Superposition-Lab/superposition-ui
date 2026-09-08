@@ -54,7 +54,7 @@ const bandX0 = x(0.006);
 const bandX1 = x(0.008);
 ---
 
-<Figure {n} {caption} {top} width="100%">
+<Figure {n} {caption} {top} width="100%" minDiagramWidth="640px">
   <svg viewBox="0 0 660 400" role="img" aria-label={caption}>
     <rect class="band" x={bandX0} y={Y0} width={bandX1 - bandX0} height={Y1 - Y0}></rect>
     <text class="band-label" x={(bandX0 + bandX1) / 2} y={Y0 - 8} text-anchor="middle">

@@ -1,18 +1,9 @@
 ---
-/**
- * The plate that opens an article.
- *
- * Public-domain artwork, credited in full: the caption names the artist, the
- * work, the holding museum and the licence, and links to the museum's own
- * record so the attribution is checkable like any other source on this site.
- */
 import { Image } from 'astro:assets';
 import type { Writing } from '~/lib/writings';
-
 interface Props {
   art: NonNullable<Writing['data']['art']>;
 }
-
 const { art } = Astro.props;
 ---
 
@@ -20,40 +11,41 @@ const { art } = Astro.props;
   <Image
     src={art.src}
     alt={art.alt}
-    widths={[720, 1080, 1440, 1800]}
-    sizes="(max-width: 880px) 100vw, 840px"
+    widths={[480, 800, 1200, 1600]}
+    sizes="(max-width: 760px) 100vw, (max-width: 1440px) 92vw, 1312px"
     loading="eager"
+    fetchpriority="high"
   />
   <figcaption>
-    {art.artist}, <cite>{art.title}</cite>, {art.date}. <a href={art.href}>{art.holder}</a>, {
-      art.license
-    }.
+    <cite>{art.title}</cite>
+    {art.credit && <> / {art.href ? <a href={art.href}>{art.credit}</a> : art.credit}</>}
   </figcaption>
 </figure>
-
 <style>
   .plate {
-    margin: 44px 0 0;
-    max-width: var(--sp-measure);
+    max-width: var(--sp-wrap);
+    margin: auto;
+    padding-inline: var(--sp-gutter);
   }
-
   .plate :global(img) {
     width: 100%;
     height: auto;
-    /* Woodblock prints are printed on toned paper, so they carry their own
-       border; a hairline keeps the sheet from bleeding into the page. */
-    border: 1px solid var(--color-divider);
-    border-radius: var(--radius-md);
   }
-
   figcaption {
-    font-size: 13.5px;
-    line-height: 20px;
+    font: 11px/1.5 var(--font-mono);
     color: var(--sp-on-paper-tertiary);
-    margin-top: 14px;
+    margin-top: 12px;
   }
-
   cite {
-    font-style: italic;
+    font-style: normal;
+  }
+  @media (max-width: 760px) {
+    .plate {
+      padding-inline: 0;
+    }
+    figcaption {
+      padding-inline: var(--sp-gutter);
+      font-size: 10px;
+    }
   }
 </style>

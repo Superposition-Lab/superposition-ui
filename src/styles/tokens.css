@@ -1,75 +1,58 @@
-/*
- * Broadsheet — design tokens.
- *
- * THIS FILE IS THE SOURCE OF TRUTH FOR HOW THE SITE LOOKS.
- *
- * The ramps below are ported verbatim from the Broadsheet design system
- * (`docs/design-handoff/styles.css`). They were generated in OKLCH on one
- * shared lightness scale, so the same step of any role matches the others in
- * visual value — retune a step here and every component follows.
- *
- * Nothing else in the codebase should hard-code a hex value. Tailwind reads
- * these through `@theme` in `global.css`, so a token added here becomes a
- * utility class without any further wiring.
- */
-
+/* Cobalt: shared tokens for the site, journal, and scientific figures.
+   Blue and violet ramps keep diagram states distinct. */
 :root {
-  /* ── Ground ─────────────────────────────────────────────────────────── */
-  --color-bg: #f3f2f2; /* paper */
-  --color-surface: #eae9e9;
-  --color-text: #201e1d; /* ink */
-  --color-accent: #0088b0; /* cyan — the interactive color */
-  --color-accent-2: #d6006c; /* magenta — a rare spot color */
-  --color-divider: color-mix(in srgb, #201e1d 16%, transparent);
+  color-scheme: light dark;
+  --color-cobalt: #1510b8;
+  --sp-rule-on-dark: #57566a;
+  --sp-logo-blend: multiply;
+  /* The original logo keeps its process-ink colors. */
+  --color-brand-cyan: #0088b0;
+  --color-brand-magenta: #d6006c;
 
-  /* ── Neutral ramp ───────────────────────────────────────────────────── */
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-200: #eae7e7;
-  --color-neutral-300: #d7d3d3;
-  --color-neutral-400: #bab6b6;
-  --color-neutral-500: #9b9797;
-  --color-neutral-600: #7d7979;
-  --color-neutral-700: #605d5d;
-  --color-neutral-800: #444141;
-  --color-neutral-900: #2d2b2b;
+  --color-bg: light-dark(#f3f2f2, #0f0e25);
+  --color-surface: light-dark(#eae9ef, #19172f);
+  --color-text: light-dark(#141333, #ebe9f5);
+  --color-accent: light-dark(#1510b8, #b3acff);
+  --color-accent-2: light-dark(#6550a2, #c2a5ee);
+  --color-divider: light-dark(#d4d3de, #37334c);
 
-  /* ── Cyan ramp ──────────────────────────────────────────────────────── */
-  --color-accent-100: #e9f8ff;
-  --color-accent-200: #cbeeff;
-  --color-accent-300: #99e0ff;
-  --color-accent-400: #62c5ee;
-  --color-accent-500: #38a6cf;
-  --color-accent-600: #1186ac;
-  --color-accent-700: #006786; /* small text and links on paper */
-  --color-accent-800: #004961;
-  --color-accent-900: #0a303e;
+  --color-neutral-100: light-dark(#f8f7fa, #17152e);
+  --color-neutral-200: light-dark(#eae9ef, #25213e);
+  --color-neutral-300: light-dark(#d4d3de, #393450);
+  --color-neutral-400: light-dark(#b6b5c7, #625b7a);
+  --color-neutral-500: light-dark(#85839b, #aa9fbe);
+  --color-neutral-600: light-dark(#6c6a82, #b6aec7);
+  --color-neutral-700: light-dark(#57566a, #c5bed6);
+  --color-neutral-800: light-dark(#36344e, #e0daec);
+  --color-neutral-900: light-dark(#141333, #f3eef9);
 
-  /* ── Magenta ramp ───────────────────────────────────────────────────── */
-  --color-accent-2-100: #fff1f4;
-  --color-accent-2-200: #ffdee6;
-  --color-accent-2-300: #ffc0d0;
-  --color-accent-2-400: #ff90b1;
-  --color-accent-2-500: #ff458e;
-  --color-accent-2-600: #d82071;
-  --color-accent-2-700: #aa0b56;
-  --color-accent-2-800: #790e3d;
-  --color-accent-2-900: #4b1528;
+  --color-accent-100: light-dark(#efefff, #201b49);
+  --color-accent-200: light-dark(#ddddff, #312867);
+  --color-accent-300: light-dark(#c2bfff, #473b87);
+  --color-accent-400: light-dark(#9892ef, #6e60b0);
+  --color-accent-500: light-dark(#6a63dc, #9184d7);
+  --color-accent-600: light-dark(#4037cd, #a396ed);
+  --color-accent-700: light-dark(#1510b8, #b3acff);
+  --color-accent-800: light-dark(#100b80, #d4ceff);
+  --color-accent-900: light-dark(#08062d, #eeeaff);
 
-  /* The third process ink. A print-treatment color, not an interface accent —
-     body copy and chrome never take it. Used here only by the outer orbit
-     ring in the hero. */
+  --color-accent-2-100: light-dark(#f1edf8, #271d3e);
+  --color-accent-2-200: light-dark(#e1d8f0, #392852);
+  --color-accent-2-300: light-dark(#c8b9e2, #543d73);
+  --color-accent-2-400: light-dark(#af99cf, #795b9f);
+  --color-accent-2-500: light-dark(#8c71b8, #a180ca);
+  --color-accent-2-600: light-dark(#6550a2, #b794e4);
+  --color-accent-2-700: light-dark(#514080, #c2a5ee);
+  --color-accent-2-800: light-dark(#3a2c5c, #dcc6fa);
+  --color-accent-2-900: light-dark(#261c3e, #f0e2ff);
+
   --color-process-yellow: #edbb00;
 
-  /* ── Type ───────────────────────────────────────────────────────────── */
-  /* `--font-source-serif` is published by the Astro font pipeline (see the
-     `fonts` block in astro.config.ts) and already carries a metric-matched
-     fallback stack. Source Serif 4 sets everything: headings, body, chrome. */
   --font-heading: var(--font-source-serif, 'Source Serif 4', Georgia, serif);
-  --font-heading-weight: 600;
+  --font-heading-weight: 400;
   --font-body: var(--font-source-serif, 'Source Serif 4', Georgia, serif);
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* ── Space ──────────────────────────────────────────────────────────── */
   --space-1: 5px;
   --space-2: 10px;
   --space-3: 15px;
@@ -77,40 +60,40 @@
   --space-6: 30px;
   --space-8: 40px;
 
-  /* ── Radius ─────────────────────────────────────────────────────────── */
   --radius-sm: 1px;
   --radius-md: 2px;
   --radius-lg: 4px;
 
-  /* ── Elevation ──────────────────────────────────────────────────────── */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--color-text) 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, var(--color-text) 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, var(--color-text) 22%, transparent);
 
-  /*
-   * ── Site tokens ───────────────────────────────────────────────────────
-   * Below this line are values specific to the Superposition site, not part
-   * of Broadsheet. They are namespaced `--sp-` so a future Broadsheet update
-   * can be dropped in above without touching them.
-   */
+  --sp-navy: #08062d;
 
-  /* The hero band. A custom navy, defined in OKLCH as the design specifies. */
-  --sp-navy: oklch(0.21 0.055 235);
+  --sp-on-dark: #f3f2f2;
+  --sp-on-dark-secondary: #cecde4;
 
-  /* Text on the navy band. */
-  --sp-on-dark: #eef1f3;
-  --sp-on-dark-secondary: #c3cdd4;
+  --sp-on-paper-secondary: light-dark(#57566a, #bcb6cf);
+  --sp-on-paper-tertiary: light-dark(#57566a, #a9a2bd);
+  --sp-on-paper-muted: light-dark(#85839b, #8d859f);
+  --sp-rule-muted: light-dark(#9693ac, #6f6784);
 
-  /* Text on paper, below full ink. */
-  --sp-on-paper-secondary: #45423f; /* standfirst, figure body copy */
-  --sp-on-paper-tertiary: #55524f; /* meta, captions, footer */
-  --sp-on-paper-muted: #8a8886; /* struck-through / dropped states */
-  --sp-rule-muted: #9a9795; /* dashed borders on paper */
+  --sp-wrap: 1440px;
+  --sp-gutter: clamp(24px, 4.444vw, 64px);
 
-  /* The layout column. Every band and section shares this measure. */
-  --sp-wrap: 1200px;
-  --sp-gutter: clamp(24px, 5vw, 64px);
+  --sp-measure: 760px;
+}
 
-  /* The reading measure for article prose. */
-  --sp-measure: 840px;
+/* An explicit choice overrides the OS; no attribute means follow the system. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --sp-logo-blend: screen;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sp-logo-blend: screen;
+  }
 }

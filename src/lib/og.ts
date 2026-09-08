@@ -20,18 +20,16 @@ import { OG_IMAGE_SIZE, SITE } from '~/config';
 /**
  * Token values, restated as literals.
  *
- * Satori resolves no CSS custom properties, so these cannot be read from
- * tokens.css. `--sp-navy` is an OKLCH value, which Satori also cannot parse;
- * the hex below is its sRGB equivalent, as recorded in the design handoff.
- * If a token changes, change it here too — the check in `og.test-invariant`
- * comment below is a reminder, not a guarantee.
+ * Satori resolves no CSS custom properties. These literals mirror tokens.css:
+ * Cobalt page colors with the original cyan/magenta logo inks preserved.
  */
 const OG_COLORS = {
-  navy: '#141e2b',
-  onDark: '#eef1f3',
-  onDarkSecondary: '#c3cdd4',
+  navy: '#08062d',
+  onDark: '#f3f2f2',
+  onDarkSecondary: '#cecde4',
   cyan: '#0088b0',
   magenta: '#d6006c',
+  cobalt: '#1510b8',
 } as const;
 
 /*
@@ -143,7 +141,7 @@ export async function renderOgImage({ title, meta }: OgCard): Promise<Uint8Array
       'div',
       { style: { display: 'flex', alignItems: 'center', gap: 14 } },
       logoMark(26),
-      h('div', { style: { fontSize: 32, fontWeight: 600 } }, SITE.name),
+      h('div', { style: { fontSize: 32, fontWeight: 400 } }, SITE.name),
     ),
 
     // Title
@@ -153,7 +151,7 @@ export async function renderOgImage({ title, meta }: OgCard): Promise<Uint8Array
         style: {
           display: 'flex',
           fontSize: titleSize,
-          fontWeight: 600,
+          fontWeight: 400,
           lineHeight: 1.1,
           letterSpacing: '-0.025em',
           maxWidth: 1000,
@@ -162,14 +160,16 @@ export async function renderOgImage({ title, meta }: OgCard): Promise<Uint8Array
       title,
     ),
 
-    // Meta, or a plain cyan rule when there is none.
+    // Meta, or a plain cobalt rule when there is none.
     meta
       ? h(
           'div',
           { style: { display: 'flex', fontSize: 28, color: OG_COLORS.onDarkSecondary } },
           meta,
         )
-      : h('div', { style: { display: 'flex', width: 120, height: 4, background: OG_COLORS.cyan } }),
+      : h('div', {
+          style: { display: 'flex', width: 120, height: 4, background: OG_COLORS.cobalt },
+        }),
   );
 
   const svg = await satori(tree as never, {

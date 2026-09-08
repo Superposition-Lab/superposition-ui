@@ -55,9 +55,9 @@ export default defineConfig({
 
   markdown: {
     shikiConfig: {
-      // The article's code blocks are plain shell/output on paper stock, so a
-      // light theme that sits on --color-neutral-100 is the right register.
-      theme: 'github-light',
+      // Syntax colors follow the same color-scheme as the page, including without JS.
+      themes: { light: 'github-light', dark: 'github-dark' },
+      defaultColor: 'light-dark()',
       wrap: false,
     },
   },

@@ -26,7 +26,7 @@ Every field is validated by the schema in [`src/content.config.ts`](src/content.
 ---
 issue: 2 # positive integer. Rendered as "№ 002". Also the sort key.
 title: The headline # plain text, no markdown
-standfirst: One or two sentences. # the italic line, and the meta description
+standfirst: One or two sentences. # the summary line, and the meta description
 publishedAt: 2026-09-14 # YYYY-MM-DD
 tag: Analysis # Analysis | Research | Note
 description: Optional. # overrides standfirst for SEO and RSS
@@ -66,7 +66,7 @@ Then open <http://localhost:4321/styleguide>.
 
 To retune the design, edit the token. Every component and utility follows.
 
-If you need a genuinely new value, add it to `tokens.css` first (under the `--sp-` namespace if it is specific to this site rather than to the Broadsheet design system), then use it.
+If you need a genuinely new value, add it to `tokens.css` first (under the `--sp-` namespace if it is specific to this site rather than to the shared design system), then use it.
 
 ## Styling components
 

@@ -24,7 +24,10 @@ export const SITE = {
   htmlLang: 'en-US',
 } as const;
 
-export const NAV_LINKS = [{ label: 'Writings', href: '/#writings' }] as const;
+export const NAV_LINKS = [
+  { label: 'Writings', href: '/#writings' },
+  { label: 'The lab', href: '/#lab' },
+] as const;
 
 /** Open Graph image dimensions. Fixed by the OG spec, not a design choice. */
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 } as const;

@@ -1,37 +1,60 @@
 ---
-/**
- * The journal index: one row per post, the whole row a link.
- *
- * Reveals on scroll. The reveal is progressive enhancement — the section is
- * fully visible with JavaScript disabled, and the script only ever hides
- * something it is about to bring back.
- */
+import { Image } from 'astro:assets';
 import { formatIssue, formatMonthYear, writingPath, type Writing } from '~/lib/writings';
-
 interface Props {
   writings: Writing[];
 }
-
 const { writings } = Astro.props;
+const [latest, ...previous] = writings;
 ---
 
-<section id="writings" class="writings" data-reveal>
-  <h2 class="kicker">Writings</h2>
-
-  <ul class="rows">
+<section id="writings" class="writings" aria-labelledby="writings-title">
+  <div class="section-heading">
+    <h2 id="writings-title">Writings</h2>
+    <p class="eyebrow">Notes, experiments &amp; independent research</p>
+  </div>
+  {
+    latest && (
+      <article class:list={['featured', { 'without-art': !latest.data.art }]}>
+        {latest.data.art && (
+          <a
+            class="featured-image"
+            href={writingPath(latest)}
+            aria-label={`Read ${latest.data.title}`}
+          >
+            <Image
+              src={latest.data.art.src}
+              alt={latest.data.art.alt}
+              widths={[480, 800, 1200]}
+              sizes="(max-width: 760px) 100vw, 50vw"
+            />
+          </a>
+        )}
+        <div class="featured-copy">
+          <p class="eyebrow metadata">
+            {formatIssue(latest.data.issue)} / {latest.data.tag} / Latest
+          </p>
+          <h3>
+            <a href={writingPath(latest)}>{latest.data.title}</a>
+          </h3>
+          <p class="summary">{latest.data.standfirst}</p>
+          <a class="read-link" href={writingPath(latest)}>
+            Read the writing <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </article>
+    )
+  }
+  <ul class="writing-list">
     {
-      writings.map((entry) => (
+      previous.map((entry) => (
         <li>
-          <a class="row" href={writingPath(entry)}>
-            <span class="issue">{formatIssue(entry.data.issue)}</span>
-            <span class="title">
-              {entry.data.title}
-              &nbsp;
-              <span class="arrow" aria-hidden="true">
-                &rarr;
-              </span>
+          <a href={writingPath(entry)}>
+            <span class="eyebrow issue">{formatIssue(entry.data.issue)}</span>
+            <span class="writing-title">
+              {entry.data.title} <span aria-hidden="true">↗</span>
             </span>
-            <time class="date" datetime={entry.data.publishedAt.toISOString()}>
+            <time class="eyebrow" datetime={entry.data.publishedAt.toISOString()}>
               {formatMonthYear(entry.data.publishedAt)}
             </time>
           </a>
@@ -40,109 +63,193 @@ const { writings } = Astro.props;
     }
   </ul>
 </section>
-
-<script>
-  // Reveal on scroll, once, and never for readers who asked for less motion.
-  const prefersReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const targets = document.querySelectorAll<HTMLElement>('[data-reveal]');
-
-  if (!prefersReducedMotion && targets.length > 0) {
-    for (const el of targets) el.dataset['revealPending'] = '';
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          delete (entry.target as HTMLElement).dataset['revealPending'];
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold: 0.15 },
-    );
-
-    for (const el of targets) observer.observe(el);
-  }
-</script>
-
 <style>
   .writings {
-    padding-block: clamp(70px, 10vh, 100px) clamp(90px, 12vh, 120px);
+    padding-block: 80px;
   }
-
-  /* The reveal. Applied by the script above, so no-JS readers see the section
-     in its final state and never get stuck at opacity 0. */
-  [data-reveal-pending] {
-    opacity: 0;
-    transform: translateY(22px);
+  p,
+  h2,
+  h3 {
+    margin: 0;
   }
-
-  [data-reveal] {
-    transition:
-      opacity 0.7s ease,
-      transform 0.7s ease;
+  a {
+    text-decoration: none;
   }
-
-  .kicker {
-    font-family: var(--font-body);
-    font-weight: 400;
-    font-size: 13px;
-    line-height: inherit;
-    letter-spacing: 0.08em;
+  .eyebrow {
+    font: 12px/1.5 var(--font-mono);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--sp-on-paper-tertiary);
-    margin: 0 0 32px;
   }
-
-  .rows {
+  .section-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 52px;
+    letter-spacing: -0.02em;
+    color: var(--color-accent);
+  }
+  .section-heading p,
+  .summary {
+    color: var(--sp-on-paper-secondary);
+  }
+  .featured {
+    display: grid;
+    grid-template-columns: 52% minmax(0, 1fr);
+    gap: 64px;
+    margin-bottom: 60px;
+  }
+  .featured.without-art {
+    grid-template-columns: 1fr;
+  }
+  .featured-image :global(img) {
+    width: 100%;
+    height: 100%;
+    min-height: 408px;
+    object-fit: cover;
+  }
+  .featured-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 28px;
+    min-height: 408px;
+  }
+  .metadata,
+  .issue {
+    color: var(--color-accent);
+  }
+  h3 {
+    font-size: 36px;
+    line-height: 1.17;
+    letter-spacing: -0.02em;
+  }
+  h3 a {
+    color: inherit;
+  }
+  h3 a:hover {
+    color: var(--color-accent);
+  }
+  .read-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  .read-link:hover {
+    text-decoration: underline;
+  }
+  .writing-list {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: grid;
-    gap: 28px;
+    border-bottom: 1px solid var(--color-divider);
   }
-
-  .row {
-    display: flex;
+  .writing-list li {
+    border-top: 1px solid var(--color-divider);
+  }
+  .writing-list a {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) 132px;
     align-items: baseline;
-    gap: 28px;
-    flex-wrap: wrap;
-    text-decoration: none;
+    gap: 40px;
+    padding: 30px 0;
+    min-height: 104px;
     color: inherit;
   }
-
-  .issue {
-    font-family: var(--font-heading);
-    font-weight: 600;
-    font-size: 17px;
-    color: var(--color-accent-700);
-    white-space: nowrap;
-  }
-
-  .title {
-    font-family: var(--font-heading);
-    font-style: italic;
-    font-weight: 400;
-    font-size: clamp(22px, 2.6vw, 32px);
-    line-height: 1.25;
-    letter-spacing: -0.015em;
-    flex: 1;
-    min-width: 260px;
-    transition: color 0.2s ease;
-  }
-
-  .arrow {
-    font-style: normal;
-    color: var(--color-accent-700);
-  }
-
-  .date {
-    font-size: 14px;
-    color: var(--sp-on-paper-tertiary);
-    white-space: nowrap;
-  }
-
-  .row:hover .title,
-  .row:hover .arrow {
+  .writing-list a:hover {
     color: var(--color-accent);
+  }
+  .writing-title {
+    font-size: 28px;
+    line-height: 1.28;
+  }
+  .writing-title span {
+    color: var(--color-accent);
+    white-space: nowrap;
+  }
+  time {
+    color: var(--sp-on-paper-secondary);
+    text-align: right;
+    white-space: nowrap;
+  }
+  @media (max-width: 1100px) {
+    .featured {
+      gap: 36px;
+      grid-template-columns: 48% minmax(0, 1fr);
+    }
+    h3 {
+      font-size: 32px;
+    }
+    .summary {
+      font-size: 18px;
+    }
+    .metadata {
+      font-size: 10px;
+    }
+    .writing-list a {
+      grid-template-columns: 70px minmax(0, 1fr) 112px;
+      gap: 20px;
+    }
+    .writing-title {
+      font-size: 24px;
+    }
+    time {
+      font-size: 10px;
+    }
+  }
+  @media (max-width: 760px) {
+    .writings {
+      padding-block: 52px;
+    }
+    .section-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-size: 44px;
+    }
+    .section-heading p {
+      font-size: 10px;
+    }
+    .featured {
+      grid-template-columns: 1fr;
+      gap: 28px;
+      margin-bottom: 38px;
+    }
+    .featured-image :global(img) {
+      min-height: 0;
+      height: 240px;
+    }
+    .featured-copy {
+      min-height: 0;
+      gap: 22px;
+    }
+    h3 {
+      font-size: 34px;
+      line-height: 1.12;
+    }
+    .writing-list a {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding-block: 26px;
+    }
+    .writing-title {
+      font-size: 25px;
+      line-height: 1.25;
+    }
+    time {
+      text-align: left;
+    }
+    .issue {
+      font-size: 11px;
+    }
   }
 </style>

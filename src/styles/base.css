@@ -1,5 +1,13 @@
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('../assets/fonts/IBMPlexMono-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /*
- * Base element styles, ported from the Broadsheet design system.
+ * Base element styles, for the Cobalt design.
  *
  * These are the defaults every page inherits. Component-level styling belongs
  * in the scoped `<style>` block of that component, not here.
@@ -28,7 +36,7 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1.55;
   font-weight: 400;
   /* Avoid orphans in headings and short paragraphs. */

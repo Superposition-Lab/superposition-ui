@@ -28,7 +28,7 @@ touch src/content/writings/my-post-slug.mdx
 ---
 issue: 2
 title: The headline
-standfirst: The italic line under the headline. Also the meta description.
+standfirst: The summary under the headline. Also the meta description.
 publishedAt: 2026-09-14
 tag: Analysis
 ---

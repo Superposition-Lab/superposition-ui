@@ -25,36 +25,23 @@ const writings = defineCollection({
 
       title: z.string().min(1),
 
-      /** The italic standfirst under the headline. Also the meta description. */
+      /** The standfirst under the headline. Also the meta description. */
       standfirst: z.string().min(1),
 
       /** Shown as "August 2026" on the index and as the machine-readable date. */
       publishedAt: z.coerce.date(),
 
-      /** The magenta pill in the article header. */
+      /** The article category. */
       tag: z.enum(['Analysis', 'Research', 'Note']),
 
-      /**
-       * The plate under the standfirst: a public-domain artwork, with the
-       * credit the caption renders. Every field is required together, so a
-       * post either carries a fully attributed image or none at all.
-       */
+      /** Editorial artwork; credits are optional for original illustrations. */
       art: z
         .object({
-          /** Path relative to the post file, e.g. `../../assets/art/003-ejiri.jpg`. */
           src: image(),
-          /** What the print shows, for readers who cannot see it. */
           alt: z.string().min(1),
-          artist: z.string().min(1),
-          /** Work title, and the series it belongs to. */
           title: z.string().min(1),
-          /** As the holding museum dates it, e.g. "ca. 1830–32". */
-          date: z.string().min(1),
-          /** The museum, spelled as it wants to be credited. */
-          holder: z.string().min(1),
-          /** The object page, so a reader can check the record. */
-          href: z.string().url(),
-          license: z.string().min(1).default('public domain (CC0)'),
+          credit: z.string().min(1).optional(),
+          href: z.url().optional(),
         })
         .optional(),
 

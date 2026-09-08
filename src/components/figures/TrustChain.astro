@@ -5,13 +5,13 @@
  * Three box tones carry the meaning:
  *   private — dashed rule over a halftone screen; the thing never revealed
  *   plain   — a 1px ink rule; an ordinary public step
- *   result  — cyan rule on cyan tint; the artifact the chain produces
+ *   result  — cobalt rule on cobalt tint; the artifact the chain produces
  */
 import Figure from './Figure.astro';
 
 export interface ChainLink {
   label: string;
-  /** Second line, set in magenta small caps. Used to mark what stays secret. */
+  /** Second line, set in violet small caps. Used to mark what stays secret. */
   note?: string | undefined;
   tone?: 'private' | 'plain' | 'result' | undefined;
   /** Flex growth, so wider labels get proportionally more room. */
@@ -97,7 +97,11 @@ const { links, n, caption, top } = Astro.props;
   .tone-private {
     border-style: dashed;
     border-color: var(--sp-rule-muted);
-    background: radial-gradient(circle, rgba(32, 30, 29, 0.1) 1px, transparent 1.5px);
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-text) 10%, transparent) 1px,
+      transparent 1.5px
+    );
     background-size: 7px 7px;
   }
 
@@ -112,5 +116,16 @@ const { links, n, caption, top } = Astro.props;
 
   .tone-result .label {
     color: var(--color-accent-800);
+  }
+
+  @media (max-width: 560px) {
+    .chain {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .arrow {
+      transform: rotate(90deg);
+      padding: 0;
+    }
   }
 </style>

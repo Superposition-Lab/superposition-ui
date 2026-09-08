@@ -1,0 +1,117 @@
+---
+import { Image } from 'astro:assets';
+import cathedral from '~/assets/art/cobalt-cathedral.jpg';
+import { SITE } from '~/config';
+---
+
+<section class="lab" id="lab" aria-labelledby="lab-title">
+  <Image
+    src={cathedral}
+    alt="A solitary figure beneath the soaring vaults of a grainy cobalt cathedral."
+    widths={[480, 800, 1200]}
+    sizes="(max-width: 760px) 100vw, 45vw"
+  />
+  <div class="lab-copy">
+    <p class="eyebrow">The lab / Superposition</p>
+    <h2 id="lab-title">Understand deeply.<br />Make it inspectable.</h2>
+    <p>
+      We study quantum computing and cryptography through experiments, independent verification, and
+      writing that connects the theory to the results.
+    </p>
+    <p class="lab-focus">
+      Current focus: measuring the classical decoding work that sits inside quantum error
+      correction.
+    </p>
+    <a href={SITE.github}>Explore our work <span aria-hidden="true">↗</span></a>
+  </div>
+</section>
+
+<style>
+  .lab {
+    display: grid;
+    grid-template-columns: 45.14% 54.86%;
+    background: var(--sp-navy);
+    color: var(--sp-on-dark);
+  }
+  .lab :global(img) {
+    width: 100%;
+    height: 100%;
+    min-height: 570px;
+    object-fit: cover;
+    object-position: 48% 50%;
+  }
+  .lab-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 26px;
+    padding: 64px var(--sp-gutter);
+  }
+  p,
+  h2 {
+    margin: 0;
+  }
+  .eyebrow {
+    font: 12px/1.5 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  h2 {
+    font-size: 48px;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+  p {
+    max-width: 560px;
+    color: var(--sp-on-dark-secondary);
+  }
+  .lab-focus {
+    font-size: 16px;
+    border-top: 1px solid var(--sp-rule-on-dark);
+    padding-top: 24px;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 44px;
+    color: var(--sp-on-dark);
+    font-size: 16px;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  a:focus-visible {
+    outline-color: var(--sp-on-dark);
+  }
+  @media (max-width: 1100px) {
+    .lab-copy {
+      padding-block: 48px;
+    }
+    h2 {
+      font-size: 38px;
+    }
+  }
+  @media (max-width: 760px) {
+    .lab {
+      grid-template-columns: 1fr;
+    }
+    .lab :global(img) {
+      min-height: 0;
+      height: 330px;
+      object-position: 50% 70%;
+    }
+    .lab-copy {
+      padding-block: 40px 48px;
+      gap: 24px;
+    }
+    p:not(.eyebrow) {
+      font-size: 18px;
+    }
+    p.lab-focus {
+      font-size: 16px;
+    }
+  }
+</style>

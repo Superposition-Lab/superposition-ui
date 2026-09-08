@@ -1,0 +1,87 @@
+<button
+  class="theme-toggle"
+  type="button"
+  aria-label="Dark mode"
+  aria-pressed="false"
+  data-theme-toggle
+  hidden
+>
+  <svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"></path>
+  </svg>
+  <svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"></path>
+  </svg>
+</button>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const root = document.documentElement;
+  const system = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () =>
+    root.dataset['theme'] === 'dark' || (!root.dataset['theme'] && system.matches);
+
+  if (toggle) {
+    const update = () => {
+      toggle.setAttribute('aria-pressed', String(isDark()));
+      toggle.title = isDark() ? 'Switch to light mode' : 'Switch to dark mode';
+    };
+
+    toggle.addEventListener('click', () => {
+      const theme = isDark() ? 'light' : 'dark';
+      root.dataset['theme'] = theme;
+      try {
+        localStorage.setItem('superposition-theme', theme);
+      } catch {
+        // Switching still works when the browser disallows persistent storage.
+      }
+      update();
+    });
+    system.addEventListener('change', update);
+    window.addEventListener('storage', (event) => {
+      if (event.key !== 'superposition-theme' && event.key !== null) return;
+      if (event.newValue === 'light' || event.newValue === 'dark') {
+        root.dataset['theme'] = event.newValue;
+      } else {
+        delete root.dataset['theme'];
+      }
+      update();
+    });
+    update();
+    toggle.hidden = false;
+  }
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-divider);
+    border-radius: 50%;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+  }
+  .theme-toggle:hover {
+    background: var(--color-surface);
+  }
+  .theme-toggle[hidden],
+  .theme-toggle[aria-pressed='false'] .sun,
+  .theme-toggle[aria-pressed='true'] .moon {
+    display: none;
+  }
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>
