@@ -1,0 +1,67 @@
+---
+issue: 5
+title: How build settings changed our decoder timings
+standfirst: 'Two builds of the same decoder gave the same answers on saved test data. Their decoding times differed by more than a factor of two.'
+publishedAt: 2026-09-09
+tag: Note
+---
+
+A decoder is ordinary software that interprets reports of possible faults during quantum error correction. We replayed saved reports through two builds of the same program. Changing how it manages internal data reduced the average decoding time, while preserving its answers on the tested inputs.
+
+For someone comparing decoder timings, this adds a condition to check: how was each program built?
+
+## What changed between the builds
+
+We used [Fusion Blossom](https://arxiv.org/abs/2305.08307), a decoder written in Rust. Each input records indications of faults from a simulated quantum memory. Their pattern is called a syndrome. The decoder uses that pattern to predict whether the memory's final measurement result needs to be flipped. One simulated memory experiment supplies one input record, or shot.
+
+Fusion Blossom offers build options that change how it manages references to internal objects and locks access to them. Our [syndrome-bench tool](https://github.com/Superposition-Lab/syndrome-bench/blob/d4e81653e3ae810d374a17d43154a5ed1c906391/Cargo.toml) exposes these through a feature called `fb-fast`. It enables Fusion Blossom's `dangerous_pointer` option, which also enables `unsafe_pointer`. We measured the effect of that bundle; separating its pointer and locking changes would require another experiment.
+
+Both builds used Fusion Blossom 0.2.12 and Rust `nightly-2026-04-15`, with the same locked dependencies and release settings. The code connecting the decoder to the benchmark stayed fixed. Both builds received the same saved bytes, rather than newly sampled data. The [reproduction package](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode) records these conditions and the inputs.
+
+## What we timed
+
+The inputs use the [surface code](https://splabs.sh/writings/where-quantum-error-correction-starts-to-work/), which protects quantum information with a grid of qubits and repeated error checks. Its distance is the fewest physical errors that can change the protected information without the checks detecting it.
+
+We simulated memory tests with as many rounds of checks as the distance. The [input configuration](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode#fixed-inputs) sets all four of the Stim simulator's circuit-noise parameters to 0.008. These add simulated errors after gates, before each checking round, before measurement and after reset. The decoder's error rate is the fraction of inputs for which it predicts the wrong outcome.
+
+For each shot, the timer includes converting the input into a list of fault indications, solving, constructing the prediction and clearing the solver. Reading files, unpacking stored bits and constructing the decoder's graph of possible faults happen outside that interval. The [measurement code](https://github.com/Superposition-Lab/syndrome-bench/blob/d4e81653e3ae810d374a17d43154a5ed1c906391/src/bench.rs) records timer overhead separately; we leave that overhead in the reported samples.
+
+We measured on an Apple M2 Pro running macOS 26.6.2 on September 8, 2026. The [run record](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode#original-result--2026-09-08) contains three repetitions per build. Each run warms up on the first 1,000 shots, then times the whole saved stream. Build order was default, fast, fast, default, default, fast.
+
+We first calculated each run's mean time per shot. The table reports the middle of the three run means for each build. The ratio divides the default value by the fast value. Times are in microseconds (µs).
+
+| Distance | Shots per run | Default  | `fb-fast` | Default / fast |
+| -------- | ------------- | -------- | --------- | -------------- |
+| 3        | 100,000       | 13.81    | 5.93      | 2.33×          |
+| 5        | 50,000        | 279.66   | 94.87     | 2.95×          |
+| 7        | 20,000        | 2,111.38 | 663.99    | 3.18×          |
+
+Source: [original measurements and raw samples](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode#original-result--2026-09-08). Ratios use the unrounded values.
+
+## What the result establishes
+
+Both builds produced identical predictions on all [170,000 saved shots](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode#original-result--2026-09-08). We compared each prediction, because two decoders can make the same number of mistakes on different shots. Agreement on these inputs does not prove correctness on every possible input or establish memory safety.
+
+The feature bundle reduced decoding time under the tested conditions. We did not pin execution to a processor core or control temperature and operating-system scheduling, so absolute times remain exploratory. These measurements cover software decoding; quantum readout, data transport and acting on the prediction are outside the interval.
+
+Both timed paths run natively in Rust. The experiment therefore leaves Python integration overhead unmeasured. Fusion Blossom's Python package has additional build differences, so these ratios cannot explain a native-versus-Python timing gap.
+
+## Reproduce the comparison
+
+From a checkout of [syndrome-bench at the recorded revision](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391), run:
+
+```sh
+python3 reproduce/fb-pointer-mode/run.py
+```
+
+The runner builds both variants, replays the bundled inputs and verifies predictions and timing summaries. It requires Python 3.9 or newer, rustup, a native C/C++ build toolchain and network access. The [instructions](https://github.com/Superposition-Lab/syndrome-bench/tree/d4e81653e3ae810d374a17d43154a5ed1c906391/reproduce/fb-pointer-mode#run-it) cover installation and output files; the runner has been exercised on macOS arm64.
+
+To check the archived results without rebuilding or installing Rust:
+
+```sh
+python3 reproduce/fb-pointer-mode/run.py --verify-reference
+```
+
+The verifier checks prediction equality and recomputes the statistics. It reports timing ratios without requiring another machine to reproduce them.
+
+If a build setting or measurement boundary has made one of your decoder comparisons difficult to reproduce, [send us the case](mailto:m@splabs.sh). A concrete example would help us choose the next comparison.
